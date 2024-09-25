@@ -24,3 +24,10 @@ namespace OmokStoneEnum
         Black
     }
 }
+
+public enum ResourceType
+{
+    Stone,
+    UI,
+    Image
+}

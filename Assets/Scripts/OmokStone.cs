@@ -8,7 +8,7 @@ public class OmokStone : MonoBehaviour
     [SerializeField] StoneColor stoneColor;
 
     StoneData omokStoneData = null;
-
+    public StoneData OmokStoneData { get { return omokStoneData; } }
     private void Awake()
     {
         CreateStoneData();
@@ -22,7 +22,7 @@ public class OmokStone : MonoBehaviour
 
     public void LinkStoneData()
     {
-        // ¸Å´ÏÀú¿¡ ÇØ´ç ½ºÅæÀÌ ³õÀÎ À§Ä¡¸¦ Àü´ŞÇÑ´Ù.
+        // ë§¤ë‹ˆì €ì— í•´ë‹¹ ìŠ¤í†¤ì´ ë†“ì¸ ìœ„ì¹˜ë¥¼ ì „ë‹¬í•œë‹¤.
     }
 }
 
