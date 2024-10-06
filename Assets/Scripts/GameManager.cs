@@ -25,6 +25,10 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     OmokGridManager omok;
     public OmokGridManager Omok { get { return omok; } }
+
+    [SerializeField]
+    AccountManager account;
+    public AccountManager Account { get { return account; } }
     #endregion
 
     #region Cashing Manager
