@@ -30,6 +30,11 @@ public class LobbyUIController : MonoBehaviour
             Debug.LogError("회원가입 ui 부재");
     }
 
+    private void Start()
+    {
+        GameManager.Instance.Account.LobbyController = this;
+    }
+
     void Update()
     {
         exit.Execute();

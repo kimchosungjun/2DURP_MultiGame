@@ -6,7 +6,6 @@ using TMPro;
 
 public class CreateAccountUI : MonoBehaviour
 {
-    [SerializeField] bool testbool;
     enum CreateAccountType
     {
         ID =0,
@@ -73,8 +72,9 @@ public class CreateAccountUI : MonoBehaviour
             isShowOverlapID = false;
             warnOverlapIDText.gameObject.SetActive(false);
         }
-
-        if (_inputID.Length != 0)
+        
+        // id 길이에 따라 버튼 활성, 비활성화
+        if (_inputID.Length >= 4 && _inputID.Length<9)
         {
             if(!createIDBtn.gameObject.activeSelf)
                 createIDBtn.gameObject.SetActive(true);
@@ -86,28 +86,40 @@ public class CreateAccountUI : MonoBehaviour
         }
     }
 
-    public void CheckOverlapID()
+    public void ClickCreateID()
     {
+        createIDBtn.interactable = false;
         string _inputID = inputAccountFields[(int)CreateAccountType.ID].text;
         _inputID = _inputID.Replace(" ", "");
+        GameManager.Instance.Account.CheckIDCondition(_inputID, CheckOverlapID);
+    }
 
-        // 중복 체크
-        if (testbool)
+    public void CheckOverlapID(bool isNotOverlap)
+    {
+        if (isNotOverlap)
         {
-            // 만약 중복이라면?
-            inputAccountFields[(int)CreateAccountType.ID].text = "";
-            warnOverlapIDText.gameObject.SetActive(true);
-            isShowOverlapID = true;
-            warnOverlapIDAnim.SetTrigger("Shake");
-        }
-        else
-        {
-            // 아니라면?
+            // 중복이 아니라면?
             createPlayerID = inputAccountFields[(int)CreateAccountType.ID].text;
             inputAccountFields[(int)CreateAccountType.ID].text = "";
             createAccountObjects[(int)CreateAccountType.ID].SetActive(false);
             createAccountObjects[(int)CreateAccountType.PASSWORD].SetActive(true);
+            createIDBtn.interactable = true;
         }
+        else
+        {
+            // 중복이라면?
+            SetIDText("해당 ID는 중복된 ID입니다.");
+        }
+    }
+
+    public void SetIDText(string _text)
+    {
+        warnOverlapIDText.text = _text;
+        createIDBtn.interactable = true;
+        inputAccountFields[(int)CreateAccountType.ID].text = "";
+        warnOverlapIDText.gameObject.SetActive(true);
+        isShowOverlapID = true;
+        warnOverlapIDAnim.SetTrigger("Shake");
     }
     #endregion
 
@@ -116,33 +128,50 @@ public class CreateAccountUI : MonoBehaviour
     [Header("패스워드 생성")]
     bool isHaveSpacePassword = false;
     [SerializeField] Button createPasswordBtn;
-    [SerializeField] TextMeshProUGUI noSpaceText;
+    [SerializeField] Animator passwordWarnAnim;
+    [SerializeField] TextMeshProUGUI passwordWarnText;
 
     public void PASSWORDInput(string _value)
     {
         if (_value.Contains(' '))
         {
             if (!isHaveSpacePassword)
-                noSpaceText.gameObject.SetActive(true);
+                passwordWarnText.gameObject.SetActive(true);
             isHaveSpacePassword = true;
         }
         else
         {
             if (isHaveSpacePassword)
-                noSpaceText.gameObject.SetActive(false);
+                passwordWarnText.gameObject.SetActive(false);
             isHaveSpacePassword = false;
         }
 
+        if (passwordWarnText.gameObject.activeSelf)
+            passwordWarnText.gameObject.SetActive(false);
+
         string _inputPassword = _value;
         int _cnt = _inputPassword.Length;
-        if (_cnt > 4 && !noSpaceText.gameObject.activeSelf)
+        if (_cnt > 4 && !passwordWarnText.gameObject.activeSelf)
             createPasswordBtn.gameObject.SetActive(true);
-        else if(_cnt<4 || noSpaceText.gameObject.activeSelf)
+        else if(_cnt<4 || passwordWarnText.gameObject.activeSelf)
             createPasswordBtn.gameObject.SetActive(false);
+    }
+
+    public void SetPassowrdText(string _text)
+    {
+        if (createPasswordBtn.gameObject.activeSelf)
+            createPasswordBtn.gameObject.SetActive(false);
+        inputAccountFields[(int)CreateAccountType.PASSWORD].text = "";
+        passwordWarnText.text = _text;
+        passwordWarnText.gameObject.SetActive(true);
+        passwordWarnAnim.SetTrigger("Shake");
     }
 
     public void DecidePassword()
     {
+        if (!GameManager.Instance.Account.CheckPasswordCondition(inputAccountFields[(int)CreateAccountType.PASSWORD].text))
+            return;
+        
         createPlayerPassword = inputAccountFields[(int)CreateAccountType.PASSWORD].text;
         inputAccountFields[(int)CreateAccountType.PASSWORD].text = "";
         createAccountObjects[(int)CreateAccountType.PASSWORD].SetActive(false);
@@ -163,6 +192,9 @@ public class CreateAccountUI : MonoBehaviour
         _inputPassword = _inputPassword.Replace(" ", "");
         inputAccountFields[(int)CreateAccountType.REPEAT_PASSWORD].text = _inputPassword;
 
+        if (warnDifferentAnim.gameObject.activeSelf)
+            warnDifferentAnim.gameObject.SetActive(false);
+
         if (_inputPassword.Length > 4)
             repeatPasswordBtn.gameObject.SetActive(true);
         else
@@ -178,24 +210,35 @@ public class CreateAccountUI : MonoBehaviour
             inputAccountFields[(int)CreateAccountType.REPEAT_PASSWORD].text = "";
             createAccountObjects[(int)CreateAccountType.REPEAT_PASSWORD].SetActive(false);
             createAccountObjects[(int)CreateAccountType.COMPLETE].SetActive(true);
+            GameManager.Instance.Account.Register();
         }
         else
         {
+            if (repeatPasswordBtn.gameObject.activeSelf)
+                repeatPasswordBtn.gameObject.SetActive(false);
+            inputAccountFields[(int)CreateAccountType.REPEAT_PASSWORD].text = "";
             warnDifferentText.gameObject.SetActive(true);
             warnDifferentAnim.SetTrigger("Shake");
-            inputAccountFields[(int)CreateAccountType.REPEAT_PASSWORD].text = "";
         }
     }
     #endregion
 
-    #region Complete
+    #region COMPLETE
     [SerializeField] Button completeBtn;
+    [SerializeField] TextMeshProUGUI completeText;
 
     public void ClickComplete()
     {
         ClearAccount();
     }
 
+    public void ShowCreateAccount(bool isCreateAccount)
+    {
+        if (isCreateAccount)
+            completeText.text = "회원가입 성공!";
+        else
+            completeText.text = "회원가입 실패!";
+    }
     #endregion
 
 
@@ -222,6 +265,18 @@ public class CreateAccountUI : MonoBehaviour
 
             createPlayerID = "";
             createPlayerPassword = "";
+
+            // ID 경고문자 비활성화
+            if (warnOverlapIDText.gameObject.activeSelf)
+                warnOverlapIDText.gameObject.SetActive(false);
+
+            // 패스워드 경고문자 비활성화
+            if (passwordWarnText.gameObject.activeSelf)
+                passwordWarnText.gameObject.SetActive(false);
+
+            // 재입력 경고문자 비활성화
+            if (warnDifferentAnim.gameObject.activeSelf)
+                warnDifferentAnim.gameObject.SetActive(false);
 
             return true;
         }

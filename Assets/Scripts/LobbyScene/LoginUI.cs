@@ -49,30 +49,31 @@ public class LoginUI : MonoBehaviour
     {
         string _id = loginInputs[(int)LoginType.ID].text;
         string _password = loginInputs[(int)LoginType.PASSWORD].text;
+        GameManager.Instance.Account.Login(_id, _password);
+    }
 
-        // 로그인 확인 코드 작성
-
-
+    public void CheckLogin(bool isLogin)
+    {
+        if (isLogin)
+            sucessLogin.Invoke();
+        else
+            failLogin.Invoke();
     }
 
     public void PassLoginSystem()
     {
         // 다음 씬으로 넘어가거나 ui 비활성화
+        Debug.Log("로그인 성공!");
     }
 
     public void FailLoginSystem()
     {
         warnText.gameObject.SetActive(true);
-        warnTextAnim.SetTrigger("Shaek");
+        warnTextAnim.SetTrigger("Shake");
 
         // 아이디는 기억하지 않을 때만 초기화
         if (!rememberToggle.isOn)
             loginInputs[(int)LoginType.ID].text = "";
-        else
-        {
-            // 아이디 정보 기억하기
-
-        }
 
         loginInputs[(int)LoginType.PASSWORD].text = "";
     }

@@ -1,8 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Text.RegularExpressions;
+using UnityEngine.Events;
 
 [System.Serializable]
 public class PostData
@@ -15,40 +15,55 @@ public class PostData
 
 public class AccountManager : MonoBehaviour
 {
-	const string URL = "https://script.google.com/macros/s/AKfycbzUcI8QTBlpTPRynAguZGzYNSsiGgMKjygE1B4O8XWgwdblEe_7sjc_m0GvQsiJKBfE/exec";
+	const string URL = "https://script.google.com/macros/s/AKfycbw-L_jObkL0LVsgLl_GpDFTfQGWNktuYnakC4kwsNbwcay_KrU_I78QCgyBeerqIhNr/exec";
 
 	public PostData postData = null;
 	string id = "";
 	string password = "";
+	int scoreValue= -1000;
+
+	public LobbyUIController LobbyController { get; set; } = null;
 
     #region Create Account
-    public bool CheckIDCondition(string _id)
+    public void CheckIDCondition(string _id, UnityAction<bool> _action)
     {
-		// ID가 중복인지 체크
-
 		// ID에 특수문자가 있는지 체크
 		if (Regex.IsMatch(_id, @"[^a-zA-Z0-9]"))
-			return false;
+        {
+			LobbyController.Account.SetIDText("특수문자를 사용할 수 없습니다.");
+			return;
+        }
 
-		// ID의 길이가 1자이상 8자 이하인지 체크
 		int _length = _id.Length;
-		if (0 >= _length || _length >8)
-			return false;
+		// ID의 길이가 1자이상 8자 이하인지 체크
+		if (0 >= _length || _length > 8)
+        {
+			LobbyController.Account.SetIDText("ID의 길이는 1자 이상 8자 이하여야 합니다.");
+			return;
+        }
 
-		this.id = _id;
-		return true;
+		WWWForm form = new WWWForm();
+		form.AddField("order", "OVERLAP");
+		form.AddField("id", _id);
+		StartCoroutine(Post(form,_action,_id));
 	}
 
 	public bool CheckPasswordCondition(string _password)
     {
 		// PASSWORD에 특수문자 있는지 체크
 		if (Regex.IsMatch(_password, @"[^a-zA-Z0-9]"))
+        {
+			LobbyController.Account.SetPassowrdText("특수문자를 사용할 수 없습니다.");
 			return false;
+        }
 
 		// PASSWORD의 길이가 4자 이상 12자 이하인지 체크
 		int _length = _password.Length;
 		if (4 > _length || _length > 12)
+        {
+			LobbyController.Account.SetPassowrdText("비밀번호는 4자 이상 12자 이하여야 합니다.");
 			return false;
+        }
 
 		this.password = _password;
 		return true;
@@ -62,7 +77,7 @@ public class AccountManager : MonoBehaviour
 		form.AddField("id", id);
 		form.AddField("password", password);
 		form.AddField("scoreValue", 1000);
-		StartCoroutine(Post(form));
+		StartCoroutine(Post(form, LobbyController.Account.ShowCreateAccount));
 	}
     #endregion
 
@@ -70,17 +85,17 @@ public class AccountManager : MonoBehaviour
 	{
 		WWWForm form = new WWWForm();
 		form.AddField("order", "LOGIN");
-		form.AddField("id", id);
-		form.AddField("password", password);
-		StartCoroutine(Post(form));
+		form.AddField("id", _id);
+		form.AddField("password", _password);
+		StartCoroutine(Post(form, LobbyController.Login.CheckLogin));
 	}
 
-	void OnApplicationQuit()
-	{
-		WWWForm form = new WWWForm();
-		form.AddField("order", "LOGOUT");
-		StartCoroutine(Post(form));
-	}
+	//void OnApplicationQuit()
+	//{
+	//	WWWForm form = new WWWForm();
+	//	form.AddField("order", "LOGOUT");
+	//	StartCoroutine(Post(form));
+	//}
 
 
 	public void SetScoreValue(string _scoreValue)
@@ -88,7 +103,7 @@ public class AccountManager : MonoBehaviour
 		WWWForm form = new WWWForm();
 		form.AddField("order", "SETSCOREVALUE");
 		form.AddField("scoreValue", _scoreValue);
-		StartCoroutine(Post(form));
+		StartCoroutine(Post(form, RememberScoreValue));
 	}
 
 
@@ -96,39 +111,55 @@ public class AccountManager : MonoBehaviour
 	{
 		WWWForm form = new WWWForm();
 		form.AddField("order", "GETSCOREVALUE");
-		StartCoroutine(Post(form));
+		StartCoroutine(Post(form, RememberScoreValue));
 	}
 
-	IEnumerator Post(WWWForm form)
-	{
+	public void RememberScoreValue(bool isRememberScore)
+    {
+		if (isRememberScore)
+			scoreValue = int.Parse(postData.scoreValue);
+	}
+
+	IEnumerator Post(WWWForm form, UnityAction<bool> action, string _id="")
+    {
 		using (UnityWebRequest www = UnityWebRequest.Post(URL, form)) // 반드시 using을 써야한다
 		{
 			yield return www.SendWebRequest();
 
-			if (www.isDone) Response(www.downloadHandler.text);
-			else print("웹의 응답이 없습니다.");
+			if (www.isDone) Response(www.downloadHandler.text, action, _id);
+			else Debug.LogError("응답이 없습니다!");
 		}
 	}
 
-
-	void Response(string _jsonText)
+	void Response(string _jsonText, UnityAction<bool> action, string _id="")
 	{
 		if (string.IsNullOrEmpty(_jsonText)) return;
 
 		postData = JsonUtility.FromJson<PostData>(_jsonText);
-
 		switch (postData.result)
 		{
 			case "ERROR":
-				Debug.LogError("해당 기능을 수행하지 못했습니다.");
+				action.Invoke(false);
 				break;
-			case "SUCCESS":
+			case "CANUSE":
+				this.id = _id;
+				action.Invoke(true);
+				break;
+			case "LSUCCESS":
+				// 로그인 성공
+				action.Invoke(true);
+				break;
+			case "RSUCCESS":
+				// 회원가입 성공
+				action.Invoke(true);
 				break;
 			case "SET":
 				// 새로 갱신된 점수로 세팅
+				action.Invoke(true);
 				break;
 			case "GET":
 				// 새로 갱신된 점수로 세팅
+				action.Invoke(true);
 				break;
 		}
 	}
