@@ -15,14 +15,15 @@ public class PostData
 
 public class AccountManager : MonoBehaviour
 {
-	const string URL = "https://script.google.com/macros/s/AKfycbw-L_jObkL0LVsgLl_GpDFTfQGWNktuYnakC4kwsNbwcay_KrU_I78QCgyBeerqIhNr/exec";
+	public LoginUIController LobbyController { get; set; } = null;
+	const string URL = "https://script.google.com/macros/s/AKfycbyRc0viRQNOJNNYETkou-uKFjMDCE3JJ6NMbiFlb_bR-DQ0mdqvhpo_QHMVWB8f_IVy/exec";
 
-	public PostData postData = null;
+	[SerializeField] LoginSCO loginInformation = null;
+	[SerializeField] PostData postData = null;
+
 	string id = "";
 	string password = "";
 	int scoreValue= -1000;
-
-	public LobbyUIController LobbyController { get; set; } = null;
 
     #region Create Account
     public void CheckIDCondition(string _id, UnityAction<bool> _action)
@@ -81,6 +82,31 @@ public class AccountManager : MonoBehaviour
 	}
     #endregion
 
+	public void RenewCache()
+    {
+		LoadLoginInformation _login = LoadLoginRecord();
+		WWWForm form = new WWWForm();
+		form.AddField("order", "RENEW");
+		form.AddField("id", _login.id);
+		form.AddField("password", _login.password);
+		StartCoroutine(Post(form, RenewInformation));
+	}
+
+	public void  RenewInformation(bool isRenew)
+    {
+        if (isRenew)
+        {
+			id = postData.playerName;
+			scoreValue =  int.Parse(postData.scoreValue);
+			Debug.Log("12331232131232");
+        }
+        else
+        {
+			Debug.LogError("치명적인 로그인 문제 발생!!");
+			Application.Quit();
+        }
+    }
+
     public void Login(string _id, string _password)
 	{
 		WWWForm form = new WWWForm();
@@ -90,6 +116,7 @@ public class AccountManager : MonoBehaviour
 		StartCoroutine(Post(form, LobbyController.Login.CheckLogin));
 	}
 
+	
 	//void OnApplicationQuit()
 	//{
 	//	WWWForm form = new WWWForm();
@@ -141,6 +168,9 @@ public class AccountManager : MonoBehaviour
 			case "ERROR":
 				action.Invoke(false);
 				break;
+			case "RENEW":
+				action.Invoke(true);
+				break;
 			case "CANUSE":
 				this.id = _id;
 				action.Invoke(true);
@@ -163,4 +193,58 @@ public class AccountManager : MonoBehaviour
 				break;
 		}
 	}
+
+	// 로그인 정보를 암호화하여 저장 (SCO 방식으로)
+	public void SaveLoginInformation()
+    {
+		byte[] _bytesID = System.Text.Encoding.UTF8.GetBytes(id);
+		string _encryptID = System.Convert.ToBase64String(_bytesID);
+		
+		byte[] _bytesPassowrd = System.Text.Encoding.UTF8.GetBytes(password);
+		string _encryptPassword = System.Convert.ToBase64String(_bytesPassowrd);
+
+		loginInformation.isLogin = true;
+	
+		loginInformation.id = _encryptID;
+		loginInformation.password = _encryptPassword;
+
+		password = "";
+
+		byte[] _bytesID2 = System.Convert.FromBase64String(loginInformation.id);
+		string _decryptID2 = System.Text.Encoding.UTF8.GetString(_bytesID2);
+
+		byte[] _bytesPassowrd2 = System.Convert.FromBase64String(loginInformation.password);
+		string _decryptPassword2 = System.Text.Encoding.UTF8.GetString(_bytesPassowrd2);
+		Debug.Log(_encryptID);
+		Debug.Log(_encryptPassword);
+	}
+
+	// 복호화된 로그인 정보 반환
+	public LoadLoginInformation LoadLoginRecord()
+    {
+		byte[] _bytesID = System.Convert.FromBase64String(loginInformation.id);
+		string _decryptID = System.Text.Encoding.UTF8.GetString(_bytesID);
+
+		byte[] _bytesPassowrd = System.Convert.FromBase64String(loginInformation.password);
+		string _decryptPassword = System.Text.Encoding.UTF8.GetString(_bytesPassowrd);
+
+		LoadLoginInformation result = new LoadLoginInformation(true, _decryptID, _decryptPassword);
+		return result;
+	}
+
+	// 로그아웃 시 호출
+	public void ClearLoginInformation()
+    {
+		loginInformation.isLogin = false;
+		loginInformation.id = "";
+		loginInformation.password = "";
+	}
+
+	// 로그아웃을 한 적 있는지?
+	public bool IsLoginState()
+    {
+		if (loginInformation.isLogin)
+			return true;
+		return false;
+    }
 }
