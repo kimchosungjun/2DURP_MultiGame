@@ -885,6 +885,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   decideObj: {fileID: 1846714069}
+  btns:
+  - {fileID: 1782763850}
+  - {fileID: 1403255855}
+  - {fileID: 827917320}
 --- !u!1 &732628045
 GameObject:
   m_ObjectHideFlags: 0

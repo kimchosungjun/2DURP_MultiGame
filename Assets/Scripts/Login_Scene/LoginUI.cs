@@ -62,8 +62,6 @@ public class LoginUI : MonoBehaviour
 
     public void PassLoginSystem()
     {
-        // 로그인 정보를 암호화하여 저장시킴
-        GameManager.Instance.Account.SaveLoginInformation();
         // 로비씬으로 이동
         GameManager.Instance.Scene.LoadScene(SceneNameType.Lobby_Scene);
     }
