@@ -40,5 +40,5 @@ public class LoginUIController : MonoBehaviour
         exit.Execute();
     }
 
-    public void ReturnTitle() { GameManager.Instance.Scene.LoadScene(SceneNameType.Title_Scene); }
+    public void ReturnTitle() { GameManager.Instance.Scene.LoadScene(SceneNameType.Title_Scene,true); }
 }

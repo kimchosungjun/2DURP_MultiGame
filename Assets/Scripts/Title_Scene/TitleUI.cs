@@ -25,7 +25,7 @@ public class TitleUI : MonoBehaviour
         {
             btns[i].interactable = false;
         }
-
+        GameManager.Instance.Loading.FadeOut();
         GameManager.Instance.Account.RenewCache();
     }
 
@@ -35,7 +35,8 @@ public class TitleUI : MonoBehaviour
             GameManager.Instance.Scene.LoadScene(SceneNameType.Lobby_Scene);
         else
             GameManager.Instance.Scene.LoadScene(SceneNameType.Login_Scene);
-        
+        GameManager.Instance.Loading.FadeIn();
+
         // 있어도 되고 없어도 되는 코드
         //int _btnCnt = btns.Length;
         //for (int i = 0; i < _btnCnt; i++)

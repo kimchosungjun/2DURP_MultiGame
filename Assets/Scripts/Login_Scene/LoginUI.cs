@@ -50,10 +50,12 @@ public class LoginUI : MonoBehaviour
         string _id = loginInputs[(int)LoginType.ID].text;
         string _password = loginInputs[(int)LoginType.PASSWORD].text;
         GameManager.Instance.Account.Login(_id, _password);
+        GameManager.Instance.Loading.ShowLoading(true);
     }
 
     public void CheckLogin(bool isLogin)
     {
+        GameManager.Instance.Loading.ShowLoading(false);
         if (isLogin)
             sucessLogin.Invoke();
         else

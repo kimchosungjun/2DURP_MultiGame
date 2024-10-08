@@ -10,6 +10,20 @@ public class SceneInfoManager
         SceneManager.LoadScene((int)_sceneNameType);
     }
 
+    /// <summary>
+    /// 두번째 인자값이 무조건 True여야 작동
+    /// </summary>
+    /// <param name="_sceneNameType"></param>
+    /// <param name="_noEvent"></param>
+    public void LoadScene(SceneNameType _sceneNameType, bool _noEvent)
+    {
+        if(_noEvent)
+        {
+            SceneManager.LoadScene((int)_sceneNameType);
+            GameManager.Instance.Loading.LinkFadeEffect();
+        }
+    }
+
     public string GetSceneName(SceneNameType _sceneNameType)
     {
         return Enums.GetEnumName<SceneNameType>(_sceneNameType);

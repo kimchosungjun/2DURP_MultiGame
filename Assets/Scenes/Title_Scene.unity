@@ -328,6 +328,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameManager
       objectReference: {fileID: 0}
+    - target: {fileID: 8982302473111798136, guid: 88a9984c10644724493f9e2b293ed38c, type: 3}
+      propertyPath: loading
+      value: 
+      objectReference: {fileID: 264605229}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -617,6 +621,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 201518907}
   m_CullTransparentMesh: 1
+--- !u!114 &264605229 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3251578882298577573, guid: 88a9984c10644724493f9e2b293ed38c, type: 3}
+  m_PrefabInstance: {fileID: 86198281}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9742ae39dab8a348957bbe6b709f952, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &393034492
 GameObject:
   m_ObjectHideFlags: 0

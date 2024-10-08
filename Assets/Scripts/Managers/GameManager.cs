@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Refer Manager
+
     [SerializeField]
     OmokGridManager omok;
     public OmokGridManager Omok { get { return omok; } }
@@ -29,20 +30,28 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     AccountManager account;
     public AccountManager Account { get { return account; } }
+
+    [SerializeField]
+    LoadingManager loading;
+    public LoadingManager Loading { get { return loading; } }
+
     #endregion
 
     #region Cashing Manager
+
     ResourcesManager resource = new ResourcesManager();
     public ResourcesManager Resource { get { return resource; } }
 
     SceneInfoManager scene = new SceneInfoManager();
     public SceneInfoManager Scene { get { return scene; } }
+
     #endregion
 
     private void Awake()
     {
         InitSingleton();
         omok.Init();
+        loading.Init(); 
     }
     
 
