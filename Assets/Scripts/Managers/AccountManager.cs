@@ -20,8 +20,17 @@ public class AccountManager : MonoBehaviour
 	const string URL = "https://script.google.com/macros/s/AKfycbwfygVL-scHtrexKmmqpXaDfqqEASMZBbou0BwCOm-e4zJ78BtXlacmuqluL2Gy9Mqa/exec";
 
 	[SerializeField] PostData postData = null;
+	public PostData AccountData 
+	{
+        get
+        {
+			if (postData == null)
+				return null;
+			return postData;
+        }
+	} 
 
-	string id = "";
+    string id = "";
 	string password = "";
 	int scoreValue= -1000;
 
@@ -120,17 +129,22 @@ public class AccountManager : MonoBehaviour
 		StartCoroutine(Post(form, LobbyController.Login.CheckLogin));
 	}
 
+    public void LogOut()
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("order", "LOGOUT");
+        StartCoroutine(Post(form, DoLogOut));
+    }
 
-	//void OnApplicationQuit()
-	//{
-	//	WWWForm form = new WWWForm();
-	//	form.AddField("order", "LOGOUT");
-	//	StartCoroutine(Post(form));
-	//}
-	#endregion
+	void DoLogOut(bool _isLogout)
+    {
+		postData = null;
+		GameManager.Instance.Scene.LoadScene(SceneNameType.Title_Scene);
+	}
+    #endregion
 
-	#region SET / GET : 스코어의 값을 불러오거나 값을 조정하는 기능
-	public void SetScoreValue(string _scoreValue)
+    #region SET / GET : 스코어의 값을 불러오거나 값을 조정하는 기능
+    public void SetScoreValue(string _scoreValue)
 	{
 		WWWForm form = new WWWForm();
 		form.AddField("order", "SETSCOREVALUE");
@@ -161,7 +175,7 @@ public class AccountManager : MonoBehaviour
 			yield return www.SendWebRequest();
 
 			if (www.isDone) Response(www.downloadHandler.text, action, _id);
-			else Debug.LogError("응답이 없습니다!");
+			else Application.Quit();
 		}
 	}
 
@@ -170,7 +184,6 @@ public class AccountManager : MonoBehaviour
 		if (string.IsNullOrEmpty(_jsonText)) return;
 
 		postData = JsonUtility.FromJson<PostData>(_jsonText);
-		Debug.Log(postData.result);
 		switch (postData.result)
 		{
 			case "ERROR":

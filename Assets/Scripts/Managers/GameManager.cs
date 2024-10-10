@@ -22,10 +22,9 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Refer Manager
-
     [SerializeField]
-    OmokGridManager omok;
-    public OmokGridManager Omok { get { return omok; } }
+    NetworkManager network;
+    public NetworkManager Network { get { return network; } }
 
     [SerializeField]
     AccountManager account;
@@ -50,7 +49,6 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         InitSingleton();
-        omok.Init();
         loading.Init(); 
     }
     
@@ -66,10 +64,5 @@ public class GameManager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
-    }
-
-    public void ClearAllManagers()
-    {
-        omok.Clear();
     }
 }

@@ -64,7 +64,7 @@ public class LoginUI : MonoBehaviour
 
     public void PassLoginSystem()
     {
-        // 로비씬으로 이동
+        GameManager.Instance.Network.Connect();
         GameManager.Instance.Scene.LoadScene(SceneNameType.Lobby_Scene);
     }
 

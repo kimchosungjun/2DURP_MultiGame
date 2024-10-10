@@ -33,7 +33,7 @@ public class InputController : MonoBehaviour
 
             if (isBlack)
             {
-                if (GameManager.Instance.Omok.CanPutStone(_coordinate, OmokStoneEnum.StoneColor.Black))
+                if (OmokGridManager.Instance.CanPutStone(_coordinate, OmokStoneEnum.StoneColor.Black))
                 {
                     canPut = true;
                     redStone.SetActive(false);
@@ -50,7 +50,7 @@ public class InputController : MonoBehaviour
             }
             else
             {
-                if (GameManager.Instance.Omok.CanPutStone(_coordinate, OmokStoneEnum.StoneColor.White))
+                if (OmokGridManager.Instance.CanPutStone(_coordinate, OmokStoneEnum.StoneColor.White))
                 {
                     canPut = true;
                     redStone.SetActive(false);
@@ -70,9 +70,9 @@ public class InputController : MonoBehaviour
         else if (Input.GetMouseButtonDown(1) && canPut)
         {
             if (isBlack)
-                GameManager.Instance.Omok.PutStone(currentCoordinate, OmokStoneEnum.StoneColor.Black);
+                OmokGridManager.Instance.PutStone(currentCoordinate, OmokStoneEnum.StoneColor.Black);
             else
-                GameManager.Instance.Omok.PutStone(currentCoordinate, OmokStoneEnum.StoneColor.White);
+                OmokGridManager.Instance.PutStone(currentCoordinate, OmokStoneEnum.StoneColor.White);
             canPut = false;
             isBlack = !isBlack;
             redStone.SetActive(false);
@@ -104,7 +104,7 @@ public class InputController : MonoBehaviour
                 Vector2Int _coordinate = new Vector2Int(_touchPointX, _touchPointY);
 
                 // 놓을 수 있는지 확인
-                if(GameManager.Instance.Omok.CanPutStone(_coordinate, OmokStoneEnum.StoneColor.White)) 
+                if(OmokGridManager.Instance.CanPutStone(_coordinate, OmokStoneEnum.StoneColor.White)) 
                 {
                     // 놓을 수 있다면 해당 위치에 게임 오브젝트 활성화 (초록색) + Put 버튼 활성화
                     redStone.SetActive(false);

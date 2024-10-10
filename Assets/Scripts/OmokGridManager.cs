@@ -5,6 +5,21 @@ using OmokStoneEnum;
 
 public class OmokGridManager : MonoBehaviour
 {
+    static OmokGridManager instance;
+    public static OmokGridManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                GameObject _gameManager = new GameObject("OmokGridManager");
+                _gameManager.AddComponent<OmokGridManager>();
+                instance = _gameManager.GetComponent<OmokGridManager>();
+            }
+            return instance;
+        }
+    }
+
     Dictionary<Vector2Int, OmokStone> gridGroup = new Dictionary<Vector2Int, OmokStone>();
     OmokStone[] omokStone = new OmokStone[2];
 
