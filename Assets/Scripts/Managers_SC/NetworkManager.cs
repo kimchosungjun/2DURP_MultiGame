@@ -10,8 +10,11 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     const int maxRoomCnt = 9;
     public LobbyUIController Lobby { get; set; } = null;
 
-    [SerializeField]
+    [Header("게임씬의 시스템 : 1개만 존재"),SerializeField]
     GameSystem gameSystem;
+
+    [Header("RPC"),SerializeField]
+    PhotonView pv; 
 
     #region 방리스트 갱신
 
@@ -101,8 +104,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         PhotonNetwork.LeaveRoom();
     }
 
+    public int GetRoomCnt() { return PhotonNetwork.CountOfRooms; }
+
     // 방에 참여하면 자동으로 호출되는 함수 
-    public override void OnJoinedRoom() { GameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene); }
+    public override void OnJoinedRoom() { GameManager.Instance.Loading.ShowLoading(true); GameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene); }
 
     // 방을 만들지 못하는 문제 발생할 때 호출 : 방의 개수를 초과해서 못 만들때 호출되는 것은 아님
     public override void OnCreateRoomFailed(short returnCode, string message) => Lobby.ShowWarnRoom("방의 수가 너무 많아 생성할 수 없습니다.");
@@ -146,7 +151,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public void CreateCommonGameSystem()
     {
-        photonView.RPC("CreateCommonGameSystem", RpcTarget.AllBuffered);
+        photonView.RPC("CreateGameSystem", RpcTarget.AllBuffered);
     }
 
     [PunRPC]

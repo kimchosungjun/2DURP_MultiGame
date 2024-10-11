@@ -37,6 +37,7 @@ public class SceneInfoManager
 
     public void EnterRoom(SceneNameType __sceneNameType)
     {
+        SceneManager.LoadScene((int)__sceneNameType);
         SceneManager.sceneLoaded += LoadRoomScene;
     }
 
@@ -49,6 +50,7 @@ public class SceneInfoManager
 
         GameSystem _system = _systemGo.GetComponent<GameSystem>();
         _system.EnterRoom();
+        GameManager.Instance.Loading.ShowLoading(false);
     }
 
     

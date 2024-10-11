@@ -10,10 +10,19 @@ public class Test : MonoBehaviour
         {
             ExitRoom();
         }
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            LogRoomCnt();
+        }
     }
 
     public void ExitRoom()
     {
         GameManager.Instance.Network.LeaveRoom();
+    }
+
+    public void LogRoomCnt()
+    {
+        Debug.Log(GameManager.Instance.Network.GetRoomCnt());
     }
 }
