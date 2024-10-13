@@ -21,7 +21,7 @@ public class SceneInfoManager
         if(_noEvent)
         {
             SceneManager.LoadScene((int)_sceneNameType);
-            GameManager.Instance.Loading.LinkFadeEffect();
+            OmokGameManager.Instance.Loading.LinkFadeEffect();
         }
     }
 
@@ -46,11 +46,14 @@ public class SceneInfoManager
         SceneManager.sceneLoaded -= LoadRoomScene;
         GameObject _systemGo = GameObject.FindWithTag("System");
         if (_systemGo == null)
+        {
+            Debug.Log("ddsadsadsadssa");
             return;
+        }
 
         GameSystem _system = _systemGo.GetComponent<GameSystem>();
         _system.EnterRoom();
-        GameManager.Instance.Loading.ShowLoading(false);
+        OmokGameManager.Instance.Loading.ShowLoading(false);
     }
 
     

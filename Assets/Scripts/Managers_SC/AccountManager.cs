@@ -16,21 +16,24 @@ public class PostData
 public class AccountManager : MonoBehaviour
 {
 	public TitleUI TitleController { get; set; } = null;
-	public LoginUIController LobbyController { get; set; } = null;
-	const string URL = "https://script.google.com/macros/s/AKfycbz1hpi3pWyNIdI4k2OAIAOUlm6Xy-EMKnN6TYCoKgzbsiUl-C6-2xJgXl7IiiwOL44s/exec";
+	public LoginUIController LoginController { get; set; } = null;
+	const string URL = "https://script.google.com/macros/s/AKfycbxQ4jtWg4_lhahVRt2Ts7V5bqDLbirdZSSkPczcVKDEaZRUrHRyZfW6rDn8BoM0HhdK/exec";
 
-	[SerializeField] PostData postData = null;
-	public PostData AccountData 
+	[Header("서버 데이터"),SerializeField] PostData postData = null;
+	[Header("로그 데이터"), SerializeField] LoadLogData loadLogData;
+	public PostData AccountData
 	{
-        get
-        {
+		get
+		{
 			if (postData == null)
 				return null;
 			return postData;
-        }
-	} 
+		}
+	}
+	public LoadLogData LoadData { get { return loadLogData; } }
 
-    string id = "";
+	string id = "";
+	public string ID { get { return id; } set { id = value; } }
 	string password = "";
 	int scoreValue= -1000;
 
@@ -40,7 +43,7 @@ public class AccountManager : MonoBehaviour
 		// ID에 특수문자가 있는지 체크
 		if (Regex.IsMatch(_id, @"[^a-zA-Z0-9]"))
         {
-			LobbyController.Account.SetIDText("특수문자를 사용할 수 없습니다.");
+			LoginController.Account.SetIDText("특수문자를 사용할 수 없습니다.");
 			return;
         }
 
@@ -48,7 +51,7 @@ public class AccountManager : MonoBehaviour
 		// ID의 길이가 1자이상 8자 이하인지 체크
 		if (0 >= _length || _length > 8)
         {
-			LobbyController.Account.SetIDText("ID의 길이는 1자 이상 8자 이하여야 합니다.");
+			LoginController.Account.SetIDText("ID의 길이는 1자 이상 8자 이하여야 합니다.");
 			return;
         }
 
@@ -63,7 +66,7 @@ public class AccountManager : MonoBehaviour
 		// PASSWORD에 특수문자 있는지 체크
 		if (Regex.IsMatch(_password, @"[^a-zA-Z0-9]"))
         {
-			LobbyController.Account.SetPassowrdText("특수문자를 사용할 수 없습니다.");
+			LoginController.Account.SetPassowrdText("특수문자를 사용할 수 없습니다.");
 			return false;
         }
 
@@ -71,7 +74,7 @@ public class AccountManager : MonoBehaviour
 		int _length = _password.Length;
 		if (4 > _length || _length > 12)
         {
-			LobbyController.Account.SetPassowrdText("비밀번호는 4자 이상 12자 이하여야 합니다.");
+			LoginController.Account.SetPassowrdText("비밀번호는 4자 이상 12자 이하여야 합니다.");
 			return false;
         }
 
@@ -87,7 +90,7 @@ public class AccountManager : MonoBehaviour
 		form.AddField("id", id);
 		form.AddField("password", password);
 		form.AddField("scoreValue", 1000);
-		StartCoroutine(Post(form, LobbyController.Account.ShowCreateAccount));
+		StartCoroutine(Post(form, LoginController.Account.ShowCreateAccount));
 	}
 	#endregion
 
@@ -96,6 +99,10 @@ public class AccountManager : MonoBehaviour
     {
 		WWWForm form = new WWWForm();
 		form.AddField("order", "RENEW");
+		if(loadLogData.Data !=null)
+			form.AddField("id", loadLogData.Data.ID);
+		else
+			form.AddField("id", "");
 		StartCoroutine(Post(form, RenewInformation));
 	}
 
@@ -125,23 +132,25 @@ public class AccountManager : MonoBehaviour
 		WWWForm form = new WWWForm();
 		form.AddField("order", "LOGIN");
 		form.AddField("id", _id);
+		this.id = _id;
 		form.AddField("password", _password);
-		StartCoroutine(Post(form, LobbyController.Login.CheckLogin));
+		StartCoroutine(Post(form, LoginController.Login.CheckLogin));
 	}
 
     public void LogOut()
     {
         WWWForm form = new WWWForm();
         form.AddField("order", "LOGOUT");
-		GameManager.Instance.Loading.ShowLoading(true);
+		OmokGameManager.Instance.Loading.ShowLoading(true);
 		StartCoroutine(Post(form, DoLogOut));
     }
 
 	void DoLogOut(bool _isLogout)
     {
 		postData = null;
-		GameManager.Instance.Loading.ShowLoading(false);
-		GameManager.Instance.Scene.LoadScene(SceneNameType.Title_Scene);
+		loadLogData.RenewLog("");
+		OmokGameManager.Instance.Loading.ShowLoading(false);
+		OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Title_Scene);
 	}
     #endregion
 
@@ -186,6 +195,7 @@ public class AccountManager : MonoBehaviour
 		if (string.IsNullOrEmpty(_jsonText)) return;
 
 		postData = JsonUtility.FromJson<PostData>(_jsonText);
+		//Debug.Log(postData.result);
 		switch (postData.result)
 		{
 			case "ERROR":
@@ -195,7 +205,6 @@ public class AccountManager : MonoBehaviour
 				action.Invoke(true);
 				break;
 			case "CANUSE":
-				this.id = _id;
 				action.Invoke(true);
 				break;
 			case "LSUCCESS":
@@ -216,6 +225,9 @@ public class AccountManager : MonoBehaviour
 				break;
 			case "LOGOUT":
 				action.Invoke(true);
+				break;
+			case "OVERLAP": // 같은 ID 가 로그인 된 상태라면
+				LoginController.Login.OverlapLogin();
 				break;
 		}
 	}

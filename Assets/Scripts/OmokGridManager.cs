@@ -29,8 +29,8 @@ public class OmokGridManager : MonoBehaviour
     #region Call By Manager
     public void Init()
     {
-        omokStone[0] = GameManager.Instance.Resource.LoadResource<OmokStone>("W_OmokStone", ResourceType.Stone);
-        omokStone[1] = GameManager.Instance.Resource.LoadResource<OmokStone>("B_OmokStone", ResourceType.Stone);
+        omokStone[0] = OmokGameManager.Instance.Resource.LoadResource<OmokStone>("W_OmokStone", ResourceType.Stone);
+        omokStone[1] = OmokGameManager.Instance.Resource.LoadResource<OmokStone>("B_OmokStone", ResourceType.Stone);
     }
 
     public void Clear()

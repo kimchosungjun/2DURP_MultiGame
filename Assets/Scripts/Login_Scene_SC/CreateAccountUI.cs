@@ -91,7 +91,7 @@ public class CreateAccountUI : MonoBehaviour
         createIDBtn.interactable = false;
         string _inputID = inputAccountFields[(int)CreateAccountType.ID].text;
         _inputID = _inputID.Replace(" ", "");
-        GameManager.Instance.Account.CheckIDCondition(_inputID, CheckOverlapID);
+        OmokGameManager.Instance.Account.CheckIDCondition(_inputID, CheckOverlapID);
     }
 
     public void CheckOverlapID(bool isNotOverlap)
@@ -169,7 +169,7 @@ public class CreateAccountUI : MonoBehaviour
 
     public void DecidePassword()
     {
-        if (!GameManager.Instance.Account.CheckPasswordCondition(inputAccountFields[(int)CreateAccountType.PASSWORD].text))
+        if (!OmokGameManager.Instance.Account.CheckPasswordCondition(inputAccountFields[(int)CreateAccountType.PASSWORD].text))
             return;
         
         createPlayerPassword = inputAccountFields[(int)CreateAccountType.PASSWORD].text;
@@ -210,7 +210,7 @@ public class CreateAccountUI : MonoBehaviour
             inputAccountFields[(int)CreateAccountType.REPEAT_PASSWORD].text = "";
             createAccountObjects[(int)CreateAccountType.REPEAT_PASSWORD].SetActive(false);
             createAccountObjects[(int)CreateAccountType.COMPLETE].SetActive(true);
-            GameManager.Instance.Account.Register();
+            OmokGameManager.Instance.Account.Register();
         }
         else
         {

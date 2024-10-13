@@ -340,14 +340,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: LoginCanvas
       objectReference: {fileID: 0}
-    - target: {fileID: 4680199298873682087, guid: d6946032c2179344ea97360a11785fef, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6332874914062702895, guid: d6946032c2179344ea97360a11785fef, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 9193361672418776658, guid: d6946032c2179344ea97360a11785fef, type: 3}
       propertyPath: m_Pivot.x
       value: 0

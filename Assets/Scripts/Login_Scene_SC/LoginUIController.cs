@@ -32,7 +32,7 @@ public class LoginUIController : MonoBehaviour
 
     private void Start()
     {
-        GameManager.Instance.Account.LobbyController = this;
+        OmokGameManager.Instance.Account.LoginController = this;
     }
 
     void Update()
@@ -40,5 +40,5 @@ public class LoginUIController : MonoBehaviour
         exit.Execute();
     }
 
-    public void ReturnTitle() { GameManager.Instance.Scene.LoadScene(SceneNameType.Title_Scene); }
+    public void ReturnTitle() { OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Title_Scene); }
 }

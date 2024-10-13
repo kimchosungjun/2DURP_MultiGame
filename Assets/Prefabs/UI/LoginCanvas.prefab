@@ -2197,7 +2197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 1
+  m_UiScaleMode: 0
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1080, y: 1920}
@@ -6422,7 +6422,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4617723276449134781, guid: 2a2c3ca4596803f48b987ff36e271f82, type: 3}
       propertyPath: m_text
-      value: "\uD574\uB2F9 \uD68C\uC6D0\uC815\uBCF4\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4."
+      value: "\uB85C\uADF8\uC778\uC5D0 \uC2E4\uD328\uD588\uC2B5\uB2C8\uB2E4."
       objectReference: {fileID: 0}
     - target: {fileID: 4617723276449134781, guid: 2a2c3ca4596803f48b987ff36e271f82, type: 3}
       propertyPath: m_fontSize

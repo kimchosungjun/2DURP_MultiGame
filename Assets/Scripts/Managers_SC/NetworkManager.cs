@@ -3,18 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
-using UnityEngine.UI;
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
     const int maxRoomCnt = 9;
     public LobbyUIController Lobby { get; set; } = null;
-
-    [Header("게임씬의 시스템 : 1개만 존재"),SerializeField]
-    GameSystem gameSystem;
-
-    [Header("RPC"),SerializeField]
-    PhotonView pv; 
 
     #region 방리스트 갱신
 
@@ -38,8 +31,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     
     public void JoinRoom(int _idx)
     {
+        //Lobby.SortRoom();
         PhotonNetwork.JoinRoom(existRoomGroup[_idx].Name);
-        Lobby.SortRoom();
     }
 
     // 방의 상태가 업데이트 될 때마다 알아서 호출해주는 함수 (JoinLobby가 실행될때부터 방의 상태를 업데이트 해준다.)
@@ -55,8 +48,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public void Init() => Screen.SetResolution(1080, 1920, false); // 핸드폰에서 실행할 땐, 주석처리
     public void Connect() => PhotonNetwork.ConnectUsingSettings(); // 사용자 설정 함수 (포톤 서버에 연결을 시도하는 기능)
     public override void OnConnectedToMaster() => PhotonNetwork.JoinLobby(); // 포톤 서버에 연결이 성공되면 자동으로 호출되는 콜백 함수를 재정의한 메서드 (OnJoinedLobby 함수가 자동으로 호출)
-    public override void OnJoinedLobby() =>PhotonNetwork.LocalPlayer.NickName = GameManager.Instance.Account.AccountData.playerName;
-
+    public override void OnJoinedLobby() =>PhotonNetwork.LocalPlayer.NickName = OmokGameManager.Instance.Account.AccountData.playerName;
     #endregion
 
     #region Exit Btn : 서버 연결 끊기
@@ -64,7 +56,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public void Disconnect()
     {
         PhotonNetwork.Disconnect();
-        GameManager.Instance.Account.LogOut();
+        OmokGameManager.Instance.Account.LogOut();
     }
         
     public override void OnDisconnected(DisconnectCause cause) { }
@@ -107,7 +99,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public int GetRoomCnt() { return PhotonNetwork.CountOfRooms; }
 
     // 방에 참여하면 자동으로 호출되는 함수 
-    public override void OnJoinedRoom() { GameManager.Instance.Loading.ShowLoading(true); GameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene); }
+    public override void OnJoinedRoom() { OmokGameManager.Instance.Loading.ShowLoading(true); OmokGameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene); }
 
     // 방을 만들지 못하는 문제 발생할 때 호출 : 방의 개수를 초과해서 못 만들때 호출되는 것은 아님
     public override void OnCreateRoomFailed(short returnCode, string message) => Lobby.ShowWarnRoom("방의 수가 너무 많아 생성할 수 없습니다.");
@@ -149,13 +141,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         return false;
     }
 
-    public void CreateCommonGameSystem()
-    {
-        photonView.RPC("CreateGameSystem", RpcTarget.AllBuffered);
-    }
-
-    [PunRPC]
-    public void CreateGameSystem() => Instantiate(gameSystem.gameObject);
     public RoomInfo GetRoomData() { return (PhotonNetwork.CurrentRoom!=null) ? PhotonNetwork.CurrentRoom : null; }
     #endregion
 

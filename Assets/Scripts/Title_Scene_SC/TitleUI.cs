@@ -10,12 +10,12 @@ public class TitleUI : MonoBehaviour
 
     public void Start()
     {
-        GameManager.Instance.Account.TitleController = this;
+        OmokGameManager.Instance.Account.TitleController = this;
     }
 
     public void LoadSoloPlay()
     {
-        GameManager.Instance.Scene.LoadScene(SceneNameType.SoloGame_Scene);
+        OmokGameManager.Instance.Scene.LoadScene(SceneNameType.SoloGame_Scene);
     }
 
     public void LoadMultiPlay()
@@ -25,20 +25,20 @@ public class TitleUI : MonoBehaviour
         {
             btns[i].interactable = false;
         }
-        GameManager.Instance.Loading.FadeOut();
-        GameManager.Instance.Account.RenewCache();
+        OmokGameManager.Instance.Loading.FadeOut();
+        OmokGameManager.Instance.Account.RenewCache();
     }
 
     public void CanSkipLogin(bool canSkip)
     {
         if (canSkip)
         {
-            GameManager.Instance.Scene.LoadScene(SceneNameType.Lobby_Scene);
-            GameManager.Instance.Network.Connect();
+            OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Lobby_Scene);
+            OmokGameManager.Instance.Network.Connect();
         }
         else
-            GameManager.Instance.Scene.LoadScene(SceneNameType.Login_Scene);
-        GameManager.Instance.Loading.FadeIn();
+            OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Login_Scene);
+        OmokGameManager.Instance.Loading.FadeIn();
 
         // 있어도 되고 없어도 되는 코드
         //int _btnCnt = btns.Length;

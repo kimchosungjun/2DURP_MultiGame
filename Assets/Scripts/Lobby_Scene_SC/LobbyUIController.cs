@@ -8,7 +8,7 @@ public class LobbyUIController : MonoBehaviour
 {
     void Awake()
     {
-        GameManager.Instance.Network.Lobby = this;   
+        OmokGameManager.Instance.Network.Lobby = this;   
     }
 
     void Update()
@@ -26,7 +26,7 @@ public class LobbyUIController : MonoBehaviour
     /// </summary>
     public void ReturnTitle()
     {
-        GameManager.Instance.Network.Disconnect();
+        OmokGameManager.Instance.Network.Disconnect();
     }
 
     [Header("게임 나가기"),SerializeField] GameObject[] exitPanels;
@@ -51,12 +51,12 @@ public class LobbyUIController : MonoBehaviour
 
     public void PressCreateRoom()
     {
-        GameManager.Instance.Network.CreateRoom();
+        OmokGameManager.Instance.Network.CreateRoom();
     }
 
     public void PressFastGame()
     {
-        GameManager.Instance.Network.JoinRandomRoom();
+        OmokGameManager.Instance.Network.JoinRandomRoom();
     }
 
     public void ShowWarnRoom(string _text)
@@ -73,7 +73,7 @@ public class LobbyUIController : MonoBehaviour
 
     #region Sort Room : 만들어진 방 정렬 & 리스트 버튼
     [Header("방 정렬"), Tooltip("0:이전, 1:다음"),SerializeField] Button[] sortBtns;
-    const int maxSortGroup = 3; // 방 리스트는 세 페이지만 존재한다.
+    //const int maxSortGroup = 3; // 방 리스트는 세 페이지만 존재한다.
     const int displayRoomCnt = 3;
     int currentSortNum = 0;
   
@@ -82,7 +82,7 @@ public class LobbyUIController : MonoBehaviour
     public void PressJoinRoom(int _num)
     {
         int _currentRoomNum = displayRoomCnt * currentSortNum + _num;
-        GameManager.Instance.Network.JoinRoom(_currentRoomNum);
+        OmokGameManager.Instance.Network.JoinRoom(_currentRoomNum);
     }
 
     public void PressPrevListBtn()
@@ -104,7 +104,7 @@ public class LobbyUIController : MonoBehaviour
     public void SortRoom()
     {
         // 방 정보를 입력
-        GameManager.Instance.Network.SortRoom(currentSortNum);
+        OmokGameManager.Instance.Network.SortRoom(currentSortNum);
         DecideSortBtnActive();
     }
 

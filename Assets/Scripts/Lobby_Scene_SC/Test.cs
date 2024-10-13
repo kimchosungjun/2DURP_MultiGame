@@ -18,11 +18,11 @@ public class Test : MonoBehaviour
 
     public void ExitRoom()
     {
-        GameManager.Instance.Network.LeaveRoom();
+        OmokGameManager.Instance.Network.LeaveRoom();
     }
 
     public void LogRoomCnt()
     {
-        Debug.Log(GameManager.Instance.Network.GetRoomCnt());
+        Debug.Log(OmokGameManager.Instance.Network.GetRoomCnt());
     }
 }
