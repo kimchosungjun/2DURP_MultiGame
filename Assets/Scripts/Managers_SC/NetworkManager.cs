@@ -8,6 +8,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 {
     const int maxRoomCnt = 9;
     public LobbyUIController Lobby { get; set; } = null;
+    
+    [SerializeField] GameSystem gameSystem;
 
     #region 방리스트 갱신
 
@@ -39,7 +41,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public override void OnRoomListUpdate(List<RoomInfo> roomList) 
     {
         existRoomGroup = roomList;
-        Lobby.SortRoom();
+        if(Lobby!=null)
+            Lobby.SortRoom();
     }
     #endregion
 
@@ -78,7 +81,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             IsVisible = true,
             IsOpen = true
         };
-
+        option.EmptyRoomTtl = 0; // 방이 비어있는 즉시 삭제된다.
+        option.PlayerTtl = 0; // 기본값은 -1이고, 0이면 플레이어의 재접속을 지원하지 않는다.
         PhotonNetwork.CreateRoom(PhotonNetwork.LocalPlayer.NickName+"님의 방", option, TypedLobby.Default);
     }
 
@@ -94,6 +98,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
         Debug.Log("나간다.");
         PhotonNetwork.LeaveRoom();
+        OmokGameManager.Instance.Loading.ShowLoading(true); 
+        OmokGameManager.Instance.Scene.EnterRoom(SceneNameType.Lobby_Scene);
     }
 
     public int GetRoomCnt() { return PhotonNetwork.CountOfRooms; }
@@ -102,7 +108,21 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom() { OmokGameManager.Instance.Loading.ShowLoading(true); OmokGameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene); }
 
     // 방을 만들지 못하는 문제 발생할 때 호출 : 방의 개수를 초과해서 못 만들때 호출되는 것은 아님
-    public override void OnCreateRoomFailed(short returnCode, string message) => Lobby.ShowWarnRoom("방의 수가 너무 많아 생성할 수 없습니다.");
+    public override void OnCreateRoomFailed(short returnCode, string message)
+    {
+
+        Debug.Log($"Room creation failed with code: {returnCode}, message: {message}");
+
+        // 오류 코드에 따른 처리를 추가할 수 있습니다.
+        switch (returnCode)
+        {
+            case 32758: // 예시 오류 코드
+                Debug.Log("Room name is already taken.");
+                break;
+                // 추가적인 오류 코드 처리
+        }
+    }
+   // => Lobby.ShowWarnRoom("방의 수가 너무 많아 생성할 수 없습니다.");
 
     // 방에 들어갈 수 없을 때 호출
     public override void OnJoinRoomFailed(short returnCode, string message) => Lobby.ShowWarnRoom("해당 방이 더이상 존재하지 않습니다.");
@@ -111,17 +131,30 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public override void OnJoinRandomFailed(short returnCode, string message) => Lobby.ShowWarnRoom("매칭할 플레이어를 찾지 못했습니다.");
 
     // 다른 플레이어가 들어왔을 때 자동 호출
-    public override void OnPlayerEnteredRoom(Player newPlayer) { }
+    public override void OnPlayerEnteredRoom(Player newPlayer) 
+    {
+        GameSystem.Instance.JoinRoom();
+    }
     
     // 다른 플레이어가 나갔을 때 자동 호출
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        // 다른 플레이어가 나가면 자동으로 호출
-        GameSystem _system = FindObjectOfType<GameSystem>();
-        if (_system == null)
-            return;
+        if (PhotonNetwork.InRoom) photonView.RPC("CreateGameSystem",RpcTarget.All);
+    }
 
-        _system.InitSetting();
+    [PunRPC] public void CreateGameSystem()
+    {
+        GameObject _system = GameObject.FindWithTag("System");
+        if (_system == null)
+        {
+            _system = Instantiate(gameSystem.gameObject);
+            _system.name = "GameSystem";
+        }
+        else
+        {
+            // 변수 초기화
+            GameSystem.Instance.ClearRoomState();
+        }
     }
 
     public override void OnLeftRoom()

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
 
@@ -11,132 +12,172 @@ public enum TurnOwner
     Player=2
 }
 
-public class GameSystem : MonoBehaviour
+public class GameSystem : MonoBehaviourPunCallbacks
 {
-    RoomInfo roomData = null;
-    public RoomInfo RoomData { get { if (roomData == null) return null; return roomData; } set { roomData = value; } }
-
-    bool isChiefPutBlack = false; // 방장이 검은돌을 두었는지
-    bool changePlayer = false;
-    bool isGameStart = false;
-    bool isFullRoom = false;
-
-    [Header("게임 시스템")]
-    [SerializeField, Range(0f,5f)] float waitingTime = 5f;
-    [SerializeField, Range(0f, 30f)] float turnTime = 30f;
-
-    float waitingTimer = 0f;
-    float turnTimer = 0f;
-
-    TurnOwner owner = TurnOwner.System;
+    #region Singleton & Managers
+    static GameSystem instance = null;
+    public static GameSystem Instance
+    {
+        get
+        {
+            if (instance == null)
+                return null;
+            return instance;
+        }
+    }
 
     void Awake()
     {
-        InitSetting();
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(this.gameObject);
+
+        if (gameSystemUI == null)
+            gameSystemUI = FindObjectOfType<GameSystemUI>();
     }
 
-    // 사람이 나가거나 처음 생성될때 호출
-    public void InitSetting()
-    {
-        owner = TurnOwner.System;
+    [SerializeField] OmokGridManager gridManager;
+    public OmokGridManager Grid { get { return gridManager; } }
+    #endregion
 
-        isFullRoom = false;
-        changePlayer = false;
-        isGameStart = false;
-        isChiefPutBlack = false;
+    [Header("RPC"),SerializeField] PhotonView pv;
 
-        waitingTimer = 0f;
-        turnTimer = 0f;
+    #region Relate Game System
+    // 턴
+    TurnOwner owner = TurnOwner.System;
+    public TurnOwner Owner { get => owner; set => pv.RPC(nameof(SetTurn), RpcTarget.AllBuffered, value); }
+    [PunRPC]
+    void SetTurn(TurnOwner _turnOwner)
+    { 
+        owner = _turnOwner;
+        AcceptTurnChange();
     }
 
-    public void EnterRoom()
-    {
-        if (!PhotonNetwork.InRoom)
-            return ;
-
-        int _cnt = PhotonNetwork.CurrentRoom.PlayerCount;
-        if (_cnt == 2)
-            return ;
-        return ;
-    }
-
-    void Update()
-    {
-        #region 방에 사람이 가득 차 있을 때
-        if (isFullRoom)
-        {
-            if (isGameStart)
-            {
-                TurnTime();
-            }
-            else
-            {
-                if (!changePlayer)
-                {
-                    changePlayer = true;
-                    GameStart();
-                }
-                else
-                {
-                    waitingTimer += Time.deltaTime;
-                    if (waitingTimer > waitingTime)
-                    {
-                        waitingTimer = 0f;
-                        GameStart();
-                    }
-                }
-            }
-        }
-        #endregion
-
-        #region 방에 사람이 없을 때
-        if (!isFullRoom)
-        {
-            if (isGameStart)
-            {
-                // 남아있는 사람의 승리!
-                isGameStart = false;
-            }
-
-
-        }
-        #endregion
-    }
-
-    public void GameStart()
-    {
-        isGameStart = true;
-    }
-
+    // 방장이 검은돌인지
+    bool isMasterBlack = true;
+    public bool IsMasterBlack { get => isMasterBlack; set => pv.RPC(nameof(SetMasterBlack), RpcTarget.AllBuffered, value); }
+    [PunRPC] void SetMasterBlack(bool _isMasterBlack) => isMasterBlack = _isMasterBlack;
     
-
-    public void TurnTime()
+    public void ClearRoomState()
     {
-        turnTimer += Time.deltaTime;
-        if(turnTimer> turnTime)
-        {
-            turnTimer = 0f;
-            ChangePlayerTurn();
-        }
+        Owner = TurnOwner.System; 
+        IsMasterBlack = true;
+        pv.RPC("AcceptBeforeStartGameUI", RpcTarget.All, false);
+    }
+    #endregion
+
+    GameSystemUI gameSystemUI = null;
+
+    #region Join
+    public void JoinRoom()
+    {
+        pv.RPC("AcceptBeforeStartGameUI", RpcTarget.All, true);
     }
 
-    public void ChangePlayerTurn()
+    [PunRPC] public void AcceptBeforeStartGameUI(bool _isActive)
     {
-        if(owner==TurnOwner.Chief)
-        {
-            owner = TurnOwner.Player;
-        }
-        else if(owner==TurnOwner.Player)
-        {
-            owner = TurnOwner.Chief;
-        }
-
-        // 타이머 UI 리셋
-        // 돌 두는 턴 회수 & 부여
+        if (_isActive == false)
+            StopAllCoroutines();
+        gameSystemUI.AcceptActiveBeforeGameUI(_isActive);
     }
 
-    public void GameOver()
+    IEnumerator MeasureBeforeGameTime()
+    {
+        float _time = 0f;
+        float _timer = 5f;
+        while (_time < _timer)
+        {
+            _time += Time.deltaTime;
+            yield return null;
+        }
+        StartGame();
+    }
+
+    public void StartGame()
+    {
+        if (pv.IsMine)
+            DecideDol();
+    }
+
+    public void DecideDol() 
+    {
+        if (pv.IsMine)
+        {
+            if (isMasterBlack)
+                pv.RPC("DecideDolColor", RpcTarget.All, true);
+            else
+                pv.RPC("DecideDolColor", RpcTarget.All, false);
+        }
+        else
+        {
+            if (isMasterBlack)
+                pv.RPC("DecideDolColor", RpcTarget.All, false);
+            else
+                pv.RPC("DecideDolColor", RpcTarget.All, true);
+        }
+
+        if (isMasterBlack)
+            Owner = TurnOwner.Chief;
+        else
+            Owner = TurnOwner.Player;
+
+        IsMasterBlack = !isMasterBlack;
+    }
+    [PunRPC] public void DecideDolColor(bool _isBlack) { gameSystemUI.DecideDolColor(_isBlack); }
+    #endregion
+
+    #region Turn
+    public void ReverseTurn()
+    {
+        if (owner == TurnOwner.Chief)
+            Owner = TurnOwner.Player;
+        else if (owner == TurnOwner.Player)
+            Owner = TurnOwner.Chief;
+    }
+
+    public void ChangeTurn()
+    {
+        pv.RPC("AcceptTurnChange", RpcTarget.All);   
+    }
+
+    [PunRPC] public void AcceptTurnChange()
+    {
+        if(owner==TurnOwner.System)
+        {
+            gameSystemUI.ClearTimer();
+        }
+
+        if (pv.IsMine)
+        {
+            // 내가 방장인 경우
+            if(owner== TurnOwner.Chief)
+            {
+                gameSystemUI.AcceptPutBtnState(true);
+            }
+            else if(owner== TurnOwner.Player)
+            {
+                gameSystemUI.AcceptPutBtnState(false);
+            }
+        }
+        else
+        {
+            // 내가 방장이 아닌 경우
+            if (owner == TurnOwner.Player)
+            {
+                gameSystemUI.AcceptPutBtnState(true);
+            }
+            else if(owner == TurnOwner.Chief)
+            {
+                gameSystemUI.AcceptPutBtnState(false);
+            }
+        }
+    }
+    #endregion
+
+    public void PutStone()
     {
 
     }
+    
 }

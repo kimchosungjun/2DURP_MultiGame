@@ -17,7 +17,7 @@ public class AccountManager : MonoBehaviour
 {
 	public TitleUI TitleController { get; set; } = null;
 	public LoginUIController LoginController { get; set; } = null;
-	const string URL = "https://script.google.com/macros/s/AKfycbxQ4jtWg4_lhahVRt2Ts7V5bqDLbirdZSSkPczcVKDEaZRUrHRyZfW6rDn8BoM0HhdK/exec";
+	const string URL = "https://script.google.com/macros/s/AKfycbzLMoESW5sQYFF-Qf5Fusfc0hZnxD2_MXme1X5yA_-222NovvtsR_7wjQMxjsz8S6Gs/exec";
 
 	[Header("서버 데이터"),SerializeField] PostData postData = null;
 	[Header("로그 데이터"), SerializeField] LoadLogData loadLogData;
@@ -99,9 +99,9 @@ public class AccountManager : MonoBehaviour
     {
 		WWWForm form = new WWWForm();
 		form.AddField("order", "RENEW");
-		if(loadLogData.Data !=null)
+		if(loadLogData.Data != null)
 			form.AddField("id", loadLogData.Data.ID);
-		else
+        else
 			form.AddField("id", "");
 		StartCoroutine(Post(form, RenewInformation));
 	}
@@ -122,7 +122,8 @@ public class AccountManager : MonoBehaviour
 			password = "";
 			scoreValue = -1000;
 			TitleController.CanSkipLogin(false);
-        }
+			loadLogData.RenewLog("");
+		}
     }
 	#endregion
 
@@ -193,9 +194,7 @@ public class AccountManager : MonoBehaviour
 	void Response(string _jsonText, UnityAction<bool> action, string _id="")
 	{
 		if (string.IsNullOrEmpty(_jsonText)) return;
-
 		postData = JsonUtility.FromJson<PostData>(_jsonText);
-		//Debug.Log(postData.result);
 		switch (postData.result)
 		{
 			case "ERROR":

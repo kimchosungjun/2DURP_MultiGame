@@ -44,16 +44,16 @@ public class SceneInfoManager
     void LoadRoomScene(Scene _scene, LoadSceneMode _mode)
     {
         SceneManager.sceneLoaded -= LoadRoomScene;
-        GameObject _systemGo = GameObject.FindWithTag("System");
-        if (_systemGo == null)
-        {
-            Debug.Log("ddsadsadsadssa");
-            return;
-        }
-
-        GameSystem _system = _systemGo.GetComponent<GameSystem>();
-        _system.EnterRoom();
         OmokGameManager.Instance.Loading.ShowLoading(false);
+        //GameObject _systemGo = GameObject.FindWithTag("System");
+        //if (_systemGo == null)
+        //{
+        //    Debug.Log("ddsadsadsadssa");
+        //    return;
+        //}
+
+        //GameSystem _system = _systemGo.GetComponent<GameSystem>();
+        //_system.EnterRoom();
     }
 
     

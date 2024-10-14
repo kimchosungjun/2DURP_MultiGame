@@ -28,7 +28,7 @@ MonoBehaviour:
     AuthMode: 0
     EnableLobbyStatistics: 0
     NetworkLogging: 1
-  DevRegion: 
+  DevRegion: hk
   PunLogging: 2
   EnableSupportLogger: 0
   RunInBackground: 1
@@ -41,6 +41,12 @@ MonoBehaviour:
   - RespawnSpaceship
   - ChatRPC
   - CreateGameSystem
+  - SetMasterBlack
+  - SetPlayWith
+  - SetTurn
+  - AcceptTurnChange
+  - AcceptBeforeStartGameUI
+  - DecideDolColor
   DisableAutoOpenWizard: 1
   ShowSettings: 0
-  DevRegionSetOnce: 0
+  DevRegionSetOnce: 1
