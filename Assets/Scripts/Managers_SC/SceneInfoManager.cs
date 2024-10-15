@@ -35,25 +35,28 @@ public class SceneInfoManager
         return Enums.GetEnumValue<SceneNameType>(_sceneNameType);
     }
 
-    public void EnterRoom(SceneNameType __sceneNameType)
+    string otherPlayerName = string.Empty;
+    public void EnterRoom(SceneNameType __sceneNameType, string _otherPlayerName="")
     {
         SceneManager.LoadScene((int)__sceneNameType);
         SceneManager.sceneLoaded += LoadRoomScene;
+        if (!_otherPlayerName.Equals(string.Empty)) otherPlayerName = _otherPlayerName;
     }
 
     void LoadRoomScene(Scene _scene, LoadSceneMode _mode)
     {
         SceneManager.sceneLoaded -= LoadRoomScene;
         OmokGameManager.Instance.Loading.ShowLoading(false);
-        //GameObject _systemGo = GameObject.FindWithTag("System");
-        //if (_systemGo == null)
-        //{
-        //    Debug.Log("ddsadsadsadssa");
-        //    return;
-        //}
-
-        //GameSystem _system = _systemGo.GetComponent<GameSystem>();
-        //_system.EnterRoom();
+        OmokGameManager.Instance.Network.CallCreateGameSystem();
+        GameObject uiObj = GameObject.FindWithTag("UI");
+        if (uiObj == null)
+        {
+            Debug.Log("해당 UI를 찾지 못했다");
+            return;
+        }
+        GameSystemUI gameSystemUI = uiObj.GetComponent<GameSystemUI>();
+        gameSystemUI.SetOtherName(otherPlayerName);
+        gameSystemUI.SetMyName();
     }
 
     

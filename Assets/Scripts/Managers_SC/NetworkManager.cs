@@ -9,8 +9,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     const int maxRoomCnt = 9;
     public LobbyUIController Lobby { get; set; } = null;
     
-    [SerializeField] GameSystem gameSystem;
-
     #region 방리스트 갱신
 
     List<RoomInfo> existRoomGroup = new List<RoomInfo>();
@@ -98,14 +96,38 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
         Debug.Log("나간다.");
         PhotonNetwork.LeaveRoom();
-        OmokGameManager.Instance.Loading.ShowLoading(true); 
-        OmokGameManager.Instance.Scene.EnterRoom(SceneNameType.Lobby_Scene);
+        OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Lobby_Scene);
     }
 
     public int GetRoomCnt() { return PhotonNetwork.CountOfRooms; }
 
-    // 방에 참여하면 자동으로 호출되는 함수 
-    public override void OnJoinedRoom() { OmokGameManager.Instance.Loading.ShowLoading(true); OmokGameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene); }
+    // 방에 참여하면 자동으로 호출되는 함수 : 자기 자신만 호출
+    public override void OnJoinedRoom() 
+    {
+        OmokGameManager.Instance.Loading.ShowLoading(true);
+
+        if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
+        {
+            OmokGameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene);
+            return;
+        }
+        else
+        {
+            Dictionary<int, Player> playerDic = PhotonNetwork.CurrentRoom.Players;
+            List<int> keys = new List<int>(playerDic.Keys);
+
+            int _cnt = keys.Count;
+            for(int i=0; i<_cnt; i++)
+            {
+                if (playerDic[keys[i]] == PhotonNetwork.LocalPlayer)
+                    continue;
+                OmokGameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene, playerDic[keys[i]].NickName);
+                return;
+            }
+        }
+        Debug.LogError("치명적인 에러 : 닉네임이 일치하지 않는 비인가 플레이어가 존재");
+        return;
+    }
 
     // 방을 만들지 못하는 문제 발생할 때 호출 : 방의 개수를 초과해서 못 만들때 호출되는 것은 아님
     public override void OnCreateRoomFailed(short returnCode, string message)
@@ -133,21 +155,24 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     // 다른 플레이어가 들어왔을 때 자동 호출
     public override void OnPlayerEnteredRoom(Player newPlayer) 
     {
-        GameSystem.Instance.JoinRoom();
+        GameSystem.Instance.EnterRoom(newPlayer.NickName);
     }
     
     // 다른 플레이어가 나갔을 때 자동 호출
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        if (PhotonNetwork.InRoom) photonView.RPC("CreateGameSystem",RpcTarget.All);
+        if (PhotonNetwork.InRoom)
+            CallCreateGameSystem();
     }
 
-    [PunRPC] public void CreateGameSystem()
+    public void CallCreateGameSystem() { CreateGameSystem(); }
+
+    public void CreateGameSystem()
     {
         GameObject _system = GameObject.FindWithTag("System");
         if (_system == null)
         {
-            _system = Instantiate(gameSystem.gameObject);
+            _system = PhotonNetwork.Instantiate("GameSystem",Vector3.zero,Quaternion.identity);
             _system.name = "GameSystem";
         }
         else

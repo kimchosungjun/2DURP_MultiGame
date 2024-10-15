@@ -61,24 +61,31 @@ public class GameSystem : MonoBehaviourPunCallbacks
     
     public void ClearRoomState()
     {
+        isFullRoom = false;
+        gameSystemUI.AcceptActiveBeforeGameUI(true);
+        gameSystemUI.SetOtherName(string.Empty);
         Owner = TurnOwner.System; 
         IsMasterBlack = true;
-        pv.RPC("AcceptBeforeStartGameUI", RpcTarget.All, false);
+        pv.RPC("AcceptBeforeStartGameUI", RpcTarget.AllBuffered, false);
     }
     #endregion
 
     GameSystemUI gameSystemUI = null;
-
+    bool isFullRoom = false;
+    public bool IsFullRoom { get => isFullRoom;  }
     #region Join
-    public void JoinRoom()
+    public void EnterRoom(string _otherPlayerName)
     {
+        isFullRoom = true;
         pv.RPC("AcceptBeforeStartGameUI", RpcTarget.All, true);
+        gameSystemUI.SetOtherName(_otherPlayerName);
     }
 
     [PunRPC] public void AcceptBeforeStartGameUI(bool _isActive)
     {
         if (_isActive == false)
             StopAllCoroutines();
+        StartCoroutine(MeasureBeforeGameTime());
         gameSystemUI.AcceptActiveBeforeGameUI(_isActive);
     }
 
@@ -96,8 +103,8 @@ public class GameSystem : MonoBehaviourPunCallbacks
 
     public void StartGame()
     {
-        if (pv.IsMine)
-            DecideDol();
+        gameSystemUI.AcceptActiveBeforeGameUI(false);
+        DecideDol();
     }
 
     public void DecideDol() 
