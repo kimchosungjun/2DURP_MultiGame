@@ -151,7 +151,6 @@ public class AccountManager : MonoBehaviour
 		postData = null;
 		loadLogData.RenewLog("");
 		OmokGameManager.Instance.Loading.ShowLoading(false);
-		OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Title_Scene);
 	}
     #endregion
 

@@ -49,22 +49,34 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public void Init() => Screen.SetResolution(1080, 1920, false); // 핸드폰에서 실행할 땐, 주석처리
     public void Connect() => PhotonNetwork.ConnectUsingSettings(); // 사용자 설정 함수 (포톤 서버에 연결을 시도하는 기능)
     public override void OnConnectedToMaster() => PhotonNetwork.JoinLobby(); // 포톤 서버에 연결이 성공되면 자동으로 호출되는 콜백 함수를 재정의한 메서드 (OnJoinedLobby 함수가 자동으로 호출)
-    public override void OnJoinedLobby() =>PhotonNetwork.LocalPlayer.NickName = OmokGameManager.Instance.Account.AccountData.playerName;
+    public override void OnJoinedLobby()
+    {
+        OmokGameManager.Instance.Scene.MultiLoadScene(SceneNameType.Lobby_Scene);
+        OmokGameManager.Instance.Loading.FadeIn();
+        OmokGameManager.Instance.Loading.ShowLoading(false);
+    }
+
+    public void SetNickName() => PhotonNetwork.LocalPlayer.NickName = OmokGameManager.Instance.Account.AccountData.playerName;
     #endregion
 
     #region Exit Btn : 서버 연결 끊기
-    // 타이틀 씬으로 이동하면서 로그아웃
+    // 로비에서 타이틀 씬으로 이동
     public void Disconnect()
     {
+        OmokGameManager.Instance.Loading.ShowLoading(true);
         PhotonNetwork.Disconnect();
         OmokGameManager.Instance.Account.LogOut();
     }
         
-    public override void OnDisconnected(DisconnectCause cause) { }
+    public override void OnDisconnected(DisconnectCause cause) 
+    {
+        OmokGameManager.Instance.Scene.LocalLoadScene(SceneNameType.Title_Scene);
+        OmokGameManager.Instance.Loading.ShowLoading(false);
+    }
     #endregion
 
     #region Room : 방 만들기 & 참여하기 & 나가기
-    public void CreateRoom()
+    public void CreateRoom(string _roomName)
     {
         int roomCnt = PhotonNetwork.CountOfRooms;
         if(maxRoomCnt<=roomCnt)
@@ -81,22 +93,16 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         };
         option.EmptyRoomTtl = 0; // 방이 비어있는 즉시 삭제된다.
         option.PlayerTtl = 0; // 기본값은 -1이고, 0이면 플레이어의 재접속을 지원하지 않는다.
-        PhotonNetwork.CreateRoom(PhotonNetwork.LocalPlayer.NickName+"님의 방", option, TypedLobby.Default);
+        PhotonNetwork.CreateRoom(_roomName, option, TypedLobby.Default);
     }
 
     public void JoinRandomRoom() => PhotonNetwork.JoinRandomRoom();
 
-    //public void LeaveRoom() => PhotonNetwork.LeaveRoom();
+    // 방을 나갈때 : 멀티 게임씬 => 로비씬
     public void LeaveRoom()
     {
-        if (!PhotonNetwork.InRoom)
-        {
-            Debug.Log("방에 없다.");
-            return;
-        }
-        Debug.Log("나간다.");
+        OmokGameManager.Instance.Loading.ShowLoading(true);
         PhotonNetwork.LeaveRoom();
-        OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Lobby_Scene);
     }
 
     public int GetRoomCnt() { return PhotonNetwork.CountOfRooms; }
@@ -105,46 +111,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom() 
     {
         OmokGameManager.Instance.Loading.ShowLoading(true);
-
-        if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
-        {
-            OmokGameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene);
-            return;
-        }
-        else
-        {
-            Dictionary<int, Player> playerDic = PhotonNetwork.CurrentRoom.Players;
-            List<int> keys = new List<int>(playerDic.Keys);
-
-            int _cnt = keys.Count;
-            for(int i=0; i<_cnt; i++)
-            {
-                if (playerDic[keys[i]] == PhotonNetwork.LocalPlayer)
-                    continue;
-                OmokGameManager.Instance.Scene.EnterRoom(SceneNameType.MultiGame_Scene, playerDic[keys[i]].NickName);
-                return;
-            }
-        }
-        Debug.LogError("치명적인 에러 : 닉네임이 일치하지 않는 비인가 플레이어가 존재");
-        return;
+        OmokGameManager.Instance.Scene.MultiLoadScene(SceneNameType.MultiGame_Scene);
     }
+    
 
     // 방을 만들지 못하는 문제 발생할 때 호출 : 방의 개수를 초과해서 못 만들때 호출되는 것은 아님
-    public override void OnCreateRoomFailed(short returnCode, string message)
-    {
-
-        Debug.Log($"Room creation failed with code: {returnCode}, message: {message}");
-
-        // 오류 코드에 따른 처리를 추가할 수 있습니다.
-        switch (returnCode)
-        {
-            case 32758: // 예시 오류 코드
-                Debug.Log("Room name is already taken.");
-                break;
-                // 추가적인 오류 코드 처리
-        }
-    }
-   // => Lobby.ShowWarnRoom("방의 수가 너무 많아 생성할 수 없습니다.");
+    public override void OnCreateRoomFailed(short returnCode, string message) => Lobby.ShowWarnRoom("동일한 방이 이미 존재합니다.");
 
     // 방에 들어갈 수 없을 때 호출
     public override void OnJoinRoomFailed(short returnCode, string message) => Lobby.ShowWarnRoom("해당 방이 더이상 존재하지 않습니다.");
@@ -155,40 +127,28 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     // 다른 플레이어가 들어왔을 때 자동 호출
     public override void OnPlayerEnteredRoom(Player newPlayer) 
     {
-        GameSystem.Instance.EnterRoom(newPlayer.NickName);
+        
     }
     
     // 다른 플레이어가 나갔을 때 자동 호출
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         if (PhotonNetwork.InRoom)
-            CallCreateGameSystem();
+            CreateGameSystem();
     }
-
-    public void CallCreateGameSystem() { CreateGameSystem(); }
 
     public void CreateGameSystem()
     {
         GameObject _system = GameObject.FindWithTag("System");
-        if (_system == null)
-        {
-            _system = PhotonNetwork.Instantiate("GameSystem",Vector3.zero,Quaternion.identity);
-            _system.name = "GameSystem";
-        }
-        else
-        {
-            // 변수 초기화
-            GameSystem.Instance.ClearRoomState();
-        }
-    }
-
-    public override void OnLeftRoom()
-    {
-        base.OnLeftRoom();
+        if (_system == null) // 방장이 나간경우
+            CheckPresenceGameSystem();
+        else // 참가자가 나간 경우
+            GameSystem.Instance.InitRoomState();
     }
     #endregion
 
     #region Game : 게임씬에서 확인해야 하는 내용들
+    public MultiGameInit MultiInit { get; set; } = null;
     public bool IsMasterClient()
     {
         if (!PhotonNetwork.InRoom)
@@ -198,8 +158,26 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             return true;
         return false;
     }
-
     public RoomInfo GetRoomData() { return (PhotonNetwork.CurrentRoom!=null) ? PhotonNetwork.CurrentRoom : null; }
+    public Player GetMyData() { return PhotonNetwork.LocalPlayer; }
+    public Dictionary<int,Player> GetRoomInPlayers() { if (!PhotonNetwork.InRoom) return null;  return PhotonNetwork.CurrentRoom.Players; }
+    public void CheckPresenceGameSystem() { if (MultiInit == null) return; MultiInit.CreateGameSystem(); }
+    public List<string> GetPlayerNames()
+    {
+        List<string> names = new List<string>();
+        names.Add(GetMyData().NickName);
+
+        int id = GetMyData().ActorNumber;
+        Dictionary<int, Player> players = GetRoomInPlayers();
+        List<int> keys = new List<int>(players.Keys);
+        for(int i=0; i<keys.Count; i++)
+        {
+            if (players[keys[i]].ActorNumber == id)
+                continue;
+            names.Add(players[keys[i]].NickName);
+        }
+        return names;
+    }
     #endregion
 
     #region RPC 사용법

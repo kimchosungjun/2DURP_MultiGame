@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using Photon.Pun;
+using Photon.Realtime;
 
 public enum PlayerDol
 {
@@ -15,7 +17,6 @@ public class GameSystemUI : MonoBehaviour
 {
     bool isTouchScreen = false;
     Vector2Int currentCoordinate = Vector2Int.zero;
-
     private void Start()
     {
         AcceptActiveBeforeGameUI(true);
@@ -39,32 +40,21 @@ public class GameSystemUI : MonoBehaviour
         }
     }
 
-    
-
     #region 시작 전 UI
     [Header("시작 전 게임 UI"), SerializeField] GameObject beforeGameUI;
     [SerializeField] Button matchBtn;
     public void AcceptActiveBeforeGameUI(bool _isActive)
     {
-        if (GameSystem.Instance.IsFullRoom)
+        beforeGameUI.SetActive(_isActive);
+        if (OmokGameManager.Instance.Network.MultiInit.IsFullRoom())
             matchBtn.interactable = true;
         else
             matchBtn.interactable = false;
-
-        beforeGameUI.SetActive(_isActive);
     }
 
-    public void MatchGame()
-    {
-        if (GameSystem.Instance.IsFullRoom)
-            beforeGameUI.SetActive(false);
-    }
+    public void MatchGame() => beforeGameUI.SetActive(false);
 
-    public void ExitRoom()
-    {
-        OmokGameManager.Instance.Network.LeaveRoom();
-    }
-
+    public void ExitRoom() => OmokGameManager.Instance.Network.LeaveRoom();
     #endregion
 
     #region 이름 
@@ -72,13 +62,20 @@ public class GameSystemUI : MonoBehaviour
     [Header("상대이름"), SerializeField] TextMeshProUGUI otherName;
     [Header("내이름"), SerializeField] TextMeshProUGUI myName;
 
-    public void SetOtherName(string _otherName)
+    public void SetRoomInPlayerNames()
     {
-
+        List<string> names = OmokGameManager.Instance.Network.GetPlayerNames();
+        if(names.Count==2)
+        {
+            myName.text = names[0];
+            otherName.text = names[1];
+        }
+        else
+        {
+            myName.text = names[0];
+            otherName.text = string.Empty;
+        }
     }
-
-    public void SetMyName() { myName.text = OmokGameManager.Instance.Account.ID; }
-
     #endregion
 
     #region 돌 두기
@@ -89,8 +86,25 @@ public class GameSystemUI : MonoBehaviour
 
     bool isMyTurn = false;
     PlayerDol dolColor = PlayerDol.None;
-    public void DecideDolColor(bool _isBlack) { if (_isBlack) dolColor = PlayerDol.Black; else dolColor = PlayerDol.White; }
-
+    public void DecideDolColor(bool _isBlack)
+    {
+        bool isIamMaster = PhotonNetwork.IsMasterClient;
+        
+        if (isIamMaster)
+        {
+            if (_isBlack)
+                dolColor = PlayerDol.Black;
+            else
+                dolColor = PlayerDol.White;
+        }
+        else
+        {
+            if (_isBlack)
+                dolColor = PlayerDol.White;
+            else
+                dolColor = PlayerDol.Black;
+        }
+    }
 
     public void AcceptPutBtnState(bool _isActive)
     {
@@ -135,7 +149,9 @@ public class GameSystemUI : MonoBehaviour
             yield return null;
         }
         timeSlider.value = 0f;
-        GameSystem.Instance.ReverseTurn();
+        
+        if(isMyTurn) // 내 턴이였을 때만 상대방에게 턴을 넘겨준다.
+            GameSystem.Instance.ReverseTurn();
     }    
 
     public void ClearTimer()

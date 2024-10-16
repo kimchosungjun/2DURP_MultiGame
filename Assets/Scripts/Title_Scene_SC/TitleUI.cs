@@ -5,9 +5,28 @@ using UnityEngine.UI;
 
 public class TitleUI : MonoBehaviour
 {
+    #region Link Manager
+    [SerializeField] GameObject gameManagerObj;
+
+    void Awake()
+    {
+        InitManager();
+    }
+
+    public void InitManager()
+    {
+        GameObject gmnr = GameObject.Find("OmokGameManager");
+        if (gmnr == null)
+        {
+            GameObject go = GameObject.Instantiate(gameManagerObj);
+            go.name = "OmokGameManager";
+        }
+    }
+    #endregion
+
+    #region Link UI
     [SerializeField] GameObject decideObj;
     [SerializeField] Button[] btns;
-
     public void Start()
     {
         OmokGameManager.Instance.Account.TitleController = this;
@@ -15,7 +34,7 @@ public class TitleUI : MonoBehaviour
 
     public void LoadSoloPlay()
     {
-        OmokGameManager.Instance.Scene.LoadScene(SceneNameType.SoloGame_Scene);
+        OmokGameManager.Instance.Scene.LocalLoadScene(SceneNameType.SoloGame_Scene);
     }
 
     public void LoadMultiPlay()
@@ -32,20 +51,12 @@ public class TitleUI : MonoBehaviour
     public void CanSkipLogin(bool canSkip)
     {
         if (canSkip)
-        {
-            OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Lobby_Scene);
             OmokGameManager.Instance.Network.Connect();
-        }
         else
-            OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Login_Scene);
-        OmokGameManager.Instance.Loading.FadeIn();
-
-        // 있어도 되고 없어도 되는 코드
-        //int _btnCnt = btns.Length;
-        //for (int i = 0; i < _btnCnt; i++)
-        //{
-        //    btns[i].interactable = true;
-        //}
+        {
+            OmokGameManager.Instance.Scene.LocalLoadScene(SceneNameType.Login_Scene);
+            OmokGameManager.Instance.Loading.FadeIn();
+        }
     }
 
     public void ActiveExitDecidePanel()
@@ -62,4 +73,5 @@ public class TitleUI : MonoBehaviour
     {
         decideObj.SetActive(false);
     }
+    #endregion
 }

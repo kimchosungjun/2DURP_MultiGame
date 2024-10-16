@@ -34,15 +34,15 @@ public class OmokGameManager : MonoBehaviour
     LoadingManager loading;
     public LoadingManager Loading { get { return loading; } }
 
+    [SerializeField]
+    SceneInfoManager scene;
+    public SceneInfoManager Scene { get { return scene; } }
     #endregion
 
     #region Cashing Manager
 
     ResourcesManager resource = new ResourcesManager();
     public ResourcesManager Resource { get { return resource; } }
-
-    SceneInfoManager scene = new SceneInfoManager();
-    public SceneInfoManager Scene { get { return scene; } }
 
     #endregion
 

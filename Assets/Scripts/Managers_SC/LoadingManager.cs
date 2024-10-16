@@ -27,7 +27,8 @@ public class LoadingManager : MonoBehaviour
     /// </summary>
     public void FadeIn(UnityAction _action = null, float _fadeTime = 1f)
     {
-       
+        if (!fadeImg.gameObject.activeSelf)
+            return;
         fadeInTime = _fadeTime;
         StartCoroutine(FadeInEffect(_action));
     }
@@ -37,6 +38,8 @@ public class LoadingManager : MonoBehaviour
     /// </summary>
     public void FadeOut(UnityAction _action = null, float _fadeTime = 1f)
     {
+        if (fadeImg.gameObject.activeSelf)
+            return;
         fadeOutTime = _fadeTime;
         StartCoroutine(FadeOutEffect(_action));
     }
@@ -98,14 +101,13 @@ public class LoadingManager : MonoBehaviour
     #region Loading
     public void ShowLoading(bool _isShow)
     {
+        if (movingObj.activeSelf == _isShow)
+            return;
+
         if (_isShow)
-        {
             movingObj.SetActive(true);
-        }
         else
-        {
             movingObj.SetActive(false);
-        }
     }
     #endregion
 }

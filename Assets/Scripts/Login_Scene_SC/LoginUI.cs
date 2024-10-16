@@ -55,7 +55,6 @@ public class LoginUI : MonoBehaviour
 
     public void CheckLogin(bool isLogin)
     {
-        OmokGameManager.Instance.Loading.ShowLoading(false);
         if (isLogin)
             sucessLogin.Invoke();
         else
@@ -65,13 +64,13 @@ public class LoginUI : MonoBehaviour
     public void PassLoginSystem()
     {
         OmokGameManager.Instance.Network.Connect();
-        OmokGameManager.Instance.Scene.LoadScene(SceneNameType.Lobby_Scene);
-        //Debug.Log(OmokGameManager.Instance.Account.ID);
         OmokGameManager.Instance.Account.LoadData.RenewLog(OmokGameManager.Instance.Account.ID);
+        OmokGameManager.Instance.Network.SetNickName();
     }
 
     public void FailLoginSystem()
     {
+        OmokGameManager.Instance.Loading.ShowLoading(false);
         OmokGameManager.Instance.Account.ID = "";
 
         warnText.text = "로그인에 실패했습니다.";
@@ -81,7 +80,6 @@ public class LoginUI : MonoBehaviour
         // 아이디는 기억하지 않을 때만 초기화
         if (!rememberToggle.isOn)
             loginInputs[(int)LoginType.ID].text = "";
-
         loginInputs[(int)LoginType.PASSWORD].text = "";
     }
 

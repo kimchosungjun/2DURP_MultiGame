@@ -47,6 +47,12 @@ MonoBehaviour:
   - AcceptTurnChange
   - AcceptBeforeStartGameUI
   - DecideDolColor
+  - SetFullRoom
+  - RPC_AcceptActiveBeforeGameUI
+  - RPC_AcceptBeforeStartGameUI
+  - RPC_ClearRoomState
+  - RPC_DecideDolColor
+  - RPC_StartGame
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

@@ -49,10 +49,7 @@ public class LobbyUIController : MonoBehaviour
     [Header("방 만들기"), SerializeField] TextMeshProUGUI warnText;
     [SerializeField] GameObject warnTextObj;
 
-    public void PressCreateRoom()
-    {
-        OmokGameManager.Instance.Network.CreateRoom();
-    }
+    public void PressCreateRoom() => SetActiveStateCreateRoomUI(true);
 
     public void PressFastGame()
     {
@@ -69,6 +66,24 @@ public class LobbyUIController : MonoBehaviour
     {
         warnTextObj.SetActive(false);
     }
+
+    [SerializeField] TMP_InputField inputRoomNameField;
+    [SerializeField] GameObject createRoomUIObj;
+    [SerializeField] GameObject createRoomWarnObj;
+    /// <summary>
+    /// 방 만들기를 눌렀을 때 활성화되는 UI
+    /// </summary>
+    /// <param name="_isActive"></param>
+    public void SetActiveStateCreateRoomUI(bool _isActive) { createRoomUIObj.SetActive(_isActive); }
+    public void DecideCreateRoom()
+    {
+        if (inputRoomNameField.text == string.Empty)
+            return;
+        OmokGameManager.Instance.Network.CreateRoom(inputRoomNameField.text);
+        inputRoomNameField.text = string.Empty;
+    }
+
+    public void CancelCreateRoom() { SetActiveStateCreateRoomUI(false); inputRoomNameField.text = ""; createRoomWarnObj.SetActive(false); }
     #endregion
 
     #region Sort Room : 만들어진 방 정렬 & 리스트 버튼
