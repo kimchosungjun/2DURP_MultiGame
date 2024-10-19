@@ -49,9 +49,32 @@ public class OmokGameManager : MonoBehaviour
     private void Awake()
     {
         InitSingleton();
-        loading.Init(); 
+        loading.Init();
+        SetResolution();
     }
     
+    public void SetResolution()
+    {
+        int targetWidth = 1080;  // 예: 1080 (FHD 가로 해상도)
+        int targetHeight = 1920; // 예: 1920 (FHD 세로 해상도)
+
+        float targetAspect = (float)targetWidth / targetHeight;
+        float currentAspect = (float)Screen.width / Screen.height;
+
+        Camera.main.aspect = targetAspect;
+
+        if (currentAspect > targetAspect)
+        {
+            float inset = 1.0f - targetAspect / currentAspect;
+            Camera.main.rect = new Rect(inset / 2.0f, 0.0f, 1.0f - inset, 1.0f);
+        }
+        else
+        {
+            float inset = 1.0f - currentAspect / targetAspect;
+            Camera.main.rect = new Rect(0.0f, inset / 2.0f, 1.0f, 1.0f - inset);
+        }
+    }
+
 
     public void InitSingleton()
     {
