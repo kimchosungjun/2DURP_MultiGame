@@ -12,8 +12,7 @@ public class RoomText : MonoBehaviour
 
     public void RenewRoomState(int _roomInPlayerNum , bool _isActive, string _roomName="")
     {
-        if (!_roomName.Equals(string.Empty))
-            roomName.text = _roomName;
+        roomName.text = _roomName;
         room.interactable = _isActive;
         roomInPlayerNum.text = _roomInPlayerNum.ToString() + " / 2";
     }

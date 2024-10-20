@@ -6,42 +6,69 @@ using Photon.Realtime;
 
 public class MultiGameInit : MonoBehaviour
 {
-    private void Awake()
-    {
-        OmokGameManager.Instance.Loading.ShowLoading(false);
-        InitSetting();
-    }
+    [SerializeField] PhotonView pv;
+    [SerializeField] GameSystem gameSystem = null;
 
-    public void InitSetting()
-    {
-        // 1) 네트워크 매니저에 연결 => CreateGameSystem 호출이 목적 (상대방이 게임을 나갔을 때 호출)
-        OmokGameManager.Instance.Network.MultiInit = this;
+    [SerializeField] float readyTimer = 5f;
 
-        // 2) 게임 시스템이 없다면 생성       
-        CreateGameSystem();
-    }
-
-    public void CreateGameSystem()
+    public void Ready()
     {
-        GameObject gameSystemObj = GameObject.FindWithTag("System");
-        if (gameSystemObj != null)
+        if (!pv.IsMine)
         {
-            GameSystem.Instance.InitRoomState();
-            GameSystem.Instance.EnterRoom();
+            Debug.Log("내 것이 아니오.");
             return;
         }
-        gameSystemObj = PhotonNetwork.Instantiate("GameSystem", Vector3.zero,Quaternion.identity);
-        gameSystemObj.name = "GameSystem";
-        GameSystem gameSystem = gameSystemObj.GetComponent<GameSystem>();
-        gameSystem.InitRoomState();
-        gameSystem.EnterRoom();
+
+        if (FindObjectOfType<GameSystem>() != null)
+            gameSystem = FindObjectOfType<GameSystem>();
+
+        // 방장일 때만 게임 시스템을 생성
+        if (gameSystem == null && PhotonNetwork.IsMasterClient)
+        {
+            //pv.RPC("CreateGameSystem", RpcTarget.AllBuffered);
+            gameSystem = PhotonNetwork.Instantiate("GameSystem", Vector3.zero, Quaternion.identity).GetComponent<GameSystem>();
+        }
+        StartCoroutine(ReadyTimer());
     }
 
-    public bool IsFullRoom()
+    IEnumerator ReadyTimer()
     {
-        NetworkManager net = OmokGameManager.Instance.Network;
-        if (net.GetRoomInPlayers().Count == 2)
-            return true;
-        return false;
+        float timer = 0f;
+        while (timer < readyTimer)
+        {
+            timer += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    public void NotReady()
+    {
+        // 방장일 때만 게임 시스템을 삭제
+        if (gameSystem != null && PhotonNetwork.IsMasterClient)
+        {
+            //pv.RPC("DestroyGameSystem", RpcTarget.AllBuffered); // 오타 수정
+            PhotonNetwork.Destroy(gameSystem.gameObject);
+            gameSystem = null; // 삭제 후 null로 초기화
+        }
+        StopAllCoroutines();
+    }
+
+    [PunRPC]
+    public void CreateGameSystem()
+    {
+        if (gameSystem == null) // 중복 생성 방지
+        {
+            gameSystem = PhotonNetwork.Instantiate("GameSystem", Vector3.zero, Quaternion.identity).GetComponent<GameSystem>();
+        }
+    }
+
+    [PunRPC]
+    public void DestroyGameSystem()
+    {
+        if (gameSystem != null) // null 체크 추가
+        {
+            PhotonNetwork.Destroy(gameSystem.gameObject);
+            gameSystem = null; // 삭제 후 null로 초기화
+        }
     }
 }

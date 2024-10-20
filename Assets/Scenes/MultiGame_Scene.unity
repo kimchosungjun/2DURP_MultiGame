@@ -385,7 +385,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.5283019, g: 0.5283019, b: 0.5283019, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.84313726}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1038,7 +1038,7 @@ GameObject:
   - component: {fileID: 1030772995}
   - component: {fileID: 1030772999}
   m_Layer: 5
-  m_Name: UI
+  m_Name: MultiUI
   m_TagString: SystemUI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1144,14 +1144,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5fc904d873d177438dd84a7db89e3e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beforeGameUI: {fileID: 1674091920}
-  matchBtn: {fileID: 1746220539}
-  otherName: {fileID: 999831939}
-  myName: {fileID: 1382766351}
-  putBtn: {fileID: 6801939967413632978}
-  myindicateTurn: {fileID: 158691479}
-  otherindicateTurn: {fileID: 2093578810}
-  timeSlider: {fileID: 2088095940}
+  beforeUIObj: {fileID: 1674091920}
 --- !u!1 &1274108155
 GameObject:
   m_ObjectHideFlags: 0
@@ -6496,6 +6489,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1856122239}
   - component: {fileID: 1856122238}
+  - component: {fileID: 1856122240}
   m_Layer: 0
   m_Name: MultiGame_Init
   m_TagString: Untagged
@@ -6515,6 +6509,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 551f70b4c353cf5419a3b551b6cefdb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pv: {fileID: 1856122240}
+  gameSystem: {fileID: 0}
+  readyTimer: 5
 --- !u!4 &1856122239
 Transform:
   m_ObjectHideFlags: 0
@@ -6530,6 +6527,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1856122240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1856122237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 3
+  OwnershipTransfer: 0
+  observableSearch: 2
+  ObservedComponents: []
+  sceneViewId: 1
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &1865976392
 GameObject:
   m_ObjectHideFlags: 0
@@ -6854,7 +6873,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.5283019, g: 0.5283019, b: 0.5283019, a: 0.392}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.84313726}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

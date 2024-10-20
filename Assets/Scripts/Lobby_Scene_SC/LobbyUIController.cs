@@ -8,16 +8,18 @@ public class LobbyUIController : MonoBehaviour
 {
     void Awake()
     {
-        OmokGameManager.Instance.Network.Lobby = this;   
+        OmokGameManager.Instance.Network.Lobby = this;
+        SortRoom();
     }
 
     void Update()
     {
-        // 뒤로가기 누름 : 종료창 활성화
+        #region Press ESC
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             PressExitBtn();
         }
+        #endregion
     }
 
     #region Exit : 뒤로가기 & 게임 종료
@@ -118,7 +120,6 @@ public class LobbyUIController : MonoBehaviour
 
     public void SortRoom()
     {
-        // 방 정보를 입력
         OmokGameManager.Instance.Network.SortRoom(currentSortNum);
         DecideSortBtnActive();
     }
@@ -126,26 +127,29 @@ public class LobbyUIController : MonoBehaviour
     public void DecideSortBtnActive()
     {
         if (currentSortNum == 0)
+        {
             sortBtns[0].interactable = false;
+            sortBtns[1].interactable = true;
+        }
         else if (currentSortNum == 1)
         {
             sortBtns[0].interactable = true;
             sortBtns[1].interactable = true;
         }
         else if (currentSortNum == 2)
+        {
+            sortBtns[0].interactable = true;
             sortBtns[1].interactable = false;
+        }
     }
 
     // 방 정보를 초기화할때 호출
     public void SetRoomState(int _index,int _roomInPlayerNum, bool _isActive, string _roomName = "")
     {
         int _cnt = roomTexts.Length;
+        // 방의 인덱스를 초과
         if (_cnt - 1 < _index)
-        {
-            Debug.LogError("인덱스 범위를 초과했습니다.");
             return;
-        }
-
         roomTexts[_index].RenewRoomState(_roomInPlayerNum, _isActive, _roomName);
     }
     #endregion

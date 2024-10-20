@@ -4,25 +4,5 @@ using UnityEngine;
 
 public class Test : MonoBehaviour
 {
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            ExitRoom();
-        }
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            LogRoomCnt();
-        }
-    }
 
-    public void ExitRoom()
-    {
-        OmokGameManager.Instance.Network.LeaveRoom();
-    }
-
-    public void LogRoomCnt()
-    {
-        Debug.Log(OmokGameManager.Instance.Network.GetRoomCnt());
-    }
 }

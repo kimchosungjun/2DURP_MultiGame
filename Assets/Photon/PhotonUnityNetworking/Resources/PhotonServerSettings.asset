@@ -53,6 +53,11 @@ MonoBehaviour:
   - RPC_ClearRoomState
   - RPC_DecideDolColor
   - RPC_StartGame
+  - DestoryGameSystem
+  - DestroyGameSystem
+  - SetImg
+  - SetImage
+  - DecideBeforeAll
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1
