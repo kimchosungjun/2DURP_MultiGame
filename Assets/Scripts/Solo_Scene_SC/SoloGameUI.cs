@@ -12,6 +12,9 @@ public class SoloGameUI : MonoBehaviour
     [SerializeField, Header("재대결")] GameObject rematchObj;
     [SerializeField, Header("솔로게임 컨트롤러")] SoloPlayController controller;
 
+    [SerializeField,Header("0은 흰돌, 1은 검은돌")] Sprite[] dolSprites;
+    [SerializeField, Header("0은 플레이어1, 1은 플레이어2")] Image[] dolImages;
+
     private void Awake()
     {
         exitObj.SetActive(false);
@@ -60,6 +63,7 @@ public class SoloGameUI : MonoBehaviour
 
     public void Rematch()
     {
+        controller.StopGame = false;
         controller.Rematch();
         rematchObj.SetActive(false);
     }
@@ -74,5 +78,19 @@ public class SoloGameUI : MonoBehaviour
         exitObj.SetActive(false);
         if(rematchObj.activeSelf)
             rematchObj.SetActive(false);
+    }
+
+    public void SetImage(bool _isPlayer1Black)
+    {
+        if (_isPlayer1Black)
+        {
+            dolImages[0].sprite = dolSprites[1];
+            dolImages[1].sprite = dolSprites[0];
+        }
+        else
+        {
+            dolImages[0].sprite = dolSprites[0];
+            dolImages[1].sprite = dolSprites[1];
+        }
     }
 }

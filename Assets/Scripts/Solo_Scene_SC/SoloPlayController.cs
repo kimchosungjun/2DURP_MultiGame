@@ -38,6 +38,7 @@ public class SoloPlayController : MonoBehaviour
         greenStone.SetActive(false);
         redStone.SetActive(false);
         SetActiveBtn();
+        soloUI.SetImage(true);
     }
 
     // 게임이 끝난 후 다시 재대결 할때 호출
@@ -50,6 +51,7 @@ public class SoloPlayController : MonoBehaviour
         redStone.SetActive(false);
         gridManager.Clear();
         SetActiveBtn();
+        soloUI.SetImage(isPlayer1Black);
     }
 
     public void SetActiveBtn()
@@ -63,8 +65,8 @@ public class SoloPlayController : MonoBehaviour
             }
             else
             {
-                putBtns[1].interactable = true;
                 putBtns[0].interactable = false;
+                putBtns[1].interactable = true;
             }
         }
         else
@@ -76,8 +78,8 @@ public class SoloPlayController : MonoBehaviour
             }
             else
             {
-                putBtns[1].interactable = true;
-                putBtns[0].interactable = false;
+                putBtns[0].interactable = true;
+                putBtns[1].interactable = false;
             }
         }
     }
@@ -100,6 +102,11 @@ public class SoloPlayController : MonoBehaviour
             int _touchPointX = Mathf.RoundToInt(_touchPoint.x);
             int _touchPointY = Mathf.RoundToInt(_touchPoint.y);
             Vector2Int _coordinate = new Vector2Int(_touchPointX, _touchPointY);
+
+            // Grid 범위를 벗어나면 입력을 받지 않는다.
+            if (gridManager.CheckOverRange(_coordinate))
+                return;
+
             currentCoordinate = _coordinate;
 
             if (isBlack)
@@ -143,6 +150,8 @@ public class SoloPlayController : MonoBehaviour
 
     public void PutStone()
     {
+        Debug.Log("누름");
+
         if (!canPut)
             return;
 
@@ -176,6 +185,7 @@ public class SoloPlayController : MonoBehaviour
                     _player1Win = false;
                 break;
         }
+        StopGame = true;
         soloUI.Victory(_player1Win);
     }
 }

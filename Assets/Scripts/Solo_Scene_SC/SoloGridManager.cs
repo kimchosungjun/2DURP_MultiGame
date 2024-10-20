@@ -12,6 +12,8 @@ public class SoloGridManager : MonoBehaviour
     [SerializeField]
     OmokStone[] omokStone;
 
+    GameObject dolParent = null;
+
     int[] oneDirX = { 0, 1, 1, 1 };
     int[] oneDirY = { 1, 1, 0, -1 };
 
@@ -19,6 +21,12 @@ public class SoloGridManager : MonoBehaviour
     {
         if (gridGroup.Count > 0)
             gridGroup.Clear();
+
+        if (dolParent != null)
+        {
+            Destroy(dolParent);
+            dolParent = null;
+        }
     }
 
     public void Awake()
@@ -59,7 +67,7 @@ public class SoloGridManager : MonoBehaviour
     {
         if (CheckOverRange(position))
             return true;
-
+        
         if (CheckPlaceStone(position))
             return true;
 
@@ -462,8 +470,12 @@ public class SoloGridManager : MonoBehaviour
     /// <param name="color"></param>
     public void PutStone(Vector2Int position, StoneColor color)
     {
+        if (dolParent == null)
+            dolParent = new GameObject("DolParent");
+
         OmokStone _stone = Instantiate(omokStone[(int)color]);
         _stone.transform.position = new Vector3(position.x, position.y, 0);
+        _stone.transform.SetParent(dolParent.transform);
         gridGroup.Add(position, _stone);
 
         if(CheckOmok(position, color))
