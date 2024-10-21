@@ -20,8 +20,8 @@ namespace OmokStoneEnum
 {
     public enum StoneColor
     {
-        White,
-        Black
+        White=0,
+        Black=1
     }
 }
 

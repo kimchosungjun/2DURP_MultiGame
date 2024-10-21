@@ -8,17 +8,13 @@ public class MultiGameInit : MonoBehaviour
 {
     [SerializeField] PhotonView pv;
     [SerializeField] GameSystem gameSystem = null;
-
+    [SerializeField] GameSystemUI ui = null;
     [SerializeField] float readyTimer = 5f;
+
+    public GameSystemUI UI { get { return ui; } }
 
     public void Ready()
     {
-        if (!pv.IsMine)
-        {
-            Debug.Log("내 것이 아니오.");
-            return;
-        }
-
         if (FindObjectOfType<GameSystem>() != null)
             gameSystem = FindObjectOfType<GameSystem>();
 

@@ -135,15 +135,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             return;
 
         multiSceneInit.NotReady();
-    }
-
-    public void CreateGameSystem()
-    {
+        multiSceneInit.UI.ClearUIState();
     }
     #endregion
 
     #region Game : 게임씬에서 확인해야 하는 내용들
-    public MultiGameInit MultiInit { get; set; } = null;
+    public bool IsFullRoom() { if (!PhotonNetwork.InRoom) return false;  if (PhotonNetwork.CurrentRoom.PlayerCount == 2) return true; else return false; }
     public bool IsMasterClient()
     {
         if (!PhotonNetwork.InRoom)

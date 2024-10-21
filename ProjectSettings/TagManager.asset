@@ -6,6 +6,7 @@ TagManager:
   tags:
   - System
   - SystemUI
+  - MStone
   layers:
   - Default
   - TransparentFX
