@@ -124,7 +124,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
         multiSceneInit.Ready();
     }
-    
+
     // 다른 플레이어가 나갔을 때 자동 호출
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
@@ -134,8 +134,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if (multiSceneInit == null)
             return;
 
-        multiSceneInit.NotReady();
         multiSceneInit.UI.ClearUIState();
+        multiSceneInit.NotReady();
     }
     #endregion
 
@@ -169,6 +169,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         }
         return names;
     }
+    public void SetPlayerNickName(string _nickName) { PhotonNetwork.LocalPlayer.NickName = _nickName; }
     #endregion
 
     #region RPC 사용법

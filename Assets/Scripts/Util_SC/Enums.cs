@@ -21,7 +21,8 @@ namespace OmokStoneEnum
     public enum StoneColor
     {
         White=0,
-        Black=1
+        Black=1,
+        Default=2
     }
 }
 

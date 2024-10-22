@@ -150,8 +150,7 @@ public class SoloPlayController : MonoBehaviour
 
     public void PutStone()
     {
-        Debug.Log("누름");
-
+        
         if (!canPut)
             return;
 

@@ -7,6 +7,7 @@ using Photon.Realtime;
 
 public class OmokGridManager : MonoBehaviour
 {
+    [SerializeField] GameSystem system;
     Dictionary<Vector2Int, OmokStone> gridGroup = new Dictionary<Vector2Int, OmokStone>();
     List<PhotonView> photonViewGroup = new List<PhotonView>();
 
@@ -15,30 +16,56 @@ public class OmokGridManager : MonoBehaviour
     int[] oneDirX = { 0, 1, 1, 1 };
     int[] oneDirY = { 1, 1, 0, -1 };
 
-    #region Call By Manager
-
-    public void ExitClear()
+    GameSystemUI ui =null;
+    public GameSystemUI UI
     {
-        int pvCnt = photonViewGroup.Count;
-        for (int i = 0; i < pvCnt; i++)
+        get
         {
-            if (photonViewGroup[i] == null && photonViewGroup[i].IsMine)
-                PhotonNetwork.Destroy(photonViewGroup[i].gameObject);
+            if (ui == null)
+                ui = FindObjectOfType<GameSystemUI>();
+            if (ui == null)
+                return null;
+            return ui;
         }
     }
+    #region Call By Manager
+
+    void Awake()
+    {
+        BeforeGameClear();   
+    }
+
+    public void BeforeGameClear()
+    {
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
+        GameObject[] beforeGameStones = GameObject.FindGameObjectsWithTag("MStone");
+        int cnt = beforeGameStones.Length;
+        for(int i=0; i<cnt; i++)
+        {
+            PhotonNetwork.Destroy(beforeGameStones[i]);
+        }
+    }
+
     public void RematchClear()
     {
+        
+        if (!PhotonNetwork.IsMasterClient)
+            return;
+
         int pvCnt = photonViewGroup.Count;
         for(int i=0; i<pvCnt; i++)
         {
+            if (photonViewGroup[i] == null)
+                continue;
+
             if (photonViewGroup[i].IsMine)
                 PhotonNetwork.Destroy(photonViewGroup[i].gameObject);
             else
             {
                 photonViewGroup[i].TransferOwnership(PhotonNetwork.LocalPlayer);
-                if (!photonViewGroup[i].IsMine)
-                    continue;
-                PhotonNetwork.Destroy(photonViewGroup[i].gameObject);
+                StartCoroutine(UntilDeleteStone(photonViewGroup[i]));    
             }
         }
         pv.RPC("RPC_ClearGroup", RpcTarget.AllBuffered);
@@ -49,6 +76,20 @@ public class OmokGridManager : MonoBehaviour
             gridGroup.Clear();
         if(photonViewGroup.Count>0)
             photonViewGroup.Clear(); 
+    }
+
+    IEnumerator UntilDeleteStone(PhotonView _pv)
+    {
+        PhotonView _delete = _pv;
+        while (_delete != null)
+        {
+            if (_delete.IsMine)
+            {
+                PhotonNetwork.Destroy(_delete.gameObject);
+                _delete = null;
+            }
+            yield return null;
+        }
     }
     #endregion
 
@@ -497,9 +538,14 @@ public class OmokGridManager : MonoBehaviour
         if (CheckOmok(position, color))
         {
             // 게임 종료!!
-            Debug.Log("게임 끝 : 오목 완성!!");
+            if (color == StoneColor.Black)
+                system.WinColor = StoneColor.Black;
+            else
+                system.WinColor = StoneColor.White;
+            system.EndGame();
             return;
         }
+        system.ReverseTurnByPut();
     }
 
     [PunRPC] void RPC_PlaceStone(int posX, int posY, int viewID)

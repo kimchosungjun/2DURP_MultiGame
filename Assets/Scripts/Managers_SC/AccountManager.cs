@@ -114,6 +114,7 @@ public class AccountManager : MonoBehaviour
 			id = postData.playerName;
 			scoreValue =  int.Parse(postData.scoreValue);
 			TitleController.CanSkipLogin(true);
+			OmokGameManager.Instance.Network.SetPlayerNickName(postData.playerName);
         }
         else
         {

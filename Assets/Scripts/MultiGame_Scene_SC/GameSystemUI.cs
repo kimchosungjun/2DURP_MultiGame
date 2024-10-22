@@ -25,6 +25,7 @@ public class GameSystemUI : MonoBehaviour
     #region UI 초기 값 설정
     void Awake()
     {
+        InitPlayerName();
         InitUISetting();
     }
 
@@ -34,11 +35,11 @@ public class GameSystemUI : MonoBehaviour
         stoneColorImages[1].gameObject.SetActive(false);
         timeSlider.maxValue = turnTimer;
         timeSlider.value = timeSlider.maxValue;
+        StopTimer();
         DecideActiveState_BeforeUI(true);
         turnPanels[0].SetActive(false);
         turnPanels[1].SetActive(false);
         putBtn.interactable = false;
-        //InitPlayerName();
     }
     #endregion
 
@@ -111,9 +112,10 @@ public class GameSystemUI : MonoBehaviour
         StartTimer();
     }
 
-    // 상대방이 나갔을 때 호출 : 강제종료
+    // 게임 종료 시 (상대방이 나갈 때)
     public void ClearUIState()
     {
+        StopTimer();
         InitUISetting();
         InitPlayerName();
         if (IsPlayingGame)
@@ -123,11 +125,77 @@ public class GameSystemUI : MonoBehaviour
         }
     }
 
+    // 게임 종료 시 (오목으로 게임이 끝났을 때)
+    public void GameWinClearUI()
+    {
+        stoneColorImages[0].gameObject.SetActive(false);
+        stoneColorImages[1].gameObject.SetActive(false);
+        timeSlider.maxValue = turnTimer;
+        timeSlider.value = timeSlider.maxValue;
+        turnPanels[0].SetActive(false);
+        turnPanels[1].SetActive(false);
+        putBtn.interactable = false;
+        if (IsPlayingGame)
+        {
+            bool isIamMaster = OmokGameManager.Instance.Network.IsMasterClient();
+            bool isMasterBlack = System.IsMasterBlack;
+            if (System == null)
+                return;
+
+            if (isIamMaster)
+            {
+                if (isMasterBlack)
+                {
+                    // 내가 흑돌
+                    // 상대방이 백돌
+                    if(System.WinColor== OmokStoneEnum.StoneColor.Black)
+                        ShowWinText(OmokGameManager.Instance.Network.GetPlayerNames()[1]+ "님이 승리했습니다!");
+                    else
+                        ShowWinText(OmokGameManager.Instance.Network.GetPlayerNames()[0] + "님이 승리했습니다!");
+                }
+                else
+                {
+                    // 내가 백돌
+                    // 상대방이 흑돌
+                    if (System.WinColor == OmokStoneEnum.StoneColor.Black)
+                        ShowWinText(OmokGameManager.Instance.Network.GetPlayerNames()[0] + "님이 승리했습니다!");
+                    else
+                        ShowWinText(OmokGameManager.Instance.Network.GetPlayerNames()[1] + "님이 승리했습니다!");
+                }
+            }
+            else
+            {
+                if (isMasterBlack)
+                {
+                    // 내가 백돌
+                    // 상대방이 흑돌
+                    if (System.WinColor == OmokStoneEnum.StoneColor.Black)
+                        ShowWinText(OmokGameManager.Instance.Network.GetPlayerNames()[0] + "님이 승리했습니다!");
+                    else
+                        ShowWinText(OmokGameManager.Instance.Network.GetPlayerNames()[1] + "님이 승리했습니다!");
+                }
+                else
+                {
+                    // 내가 흑돌
+                    // 상대방이 백돌 
+                    if (System.WinColor == OmokStoneEnum.StoneColor.Black)
+                        ShowWinText(OmokGameManager.Instance.Network.GetPlayerNames()[1] + "님이 승리했습니다!");
+                    else
+                        ShowWinText(OmokGameManager.Instance.Network.GetPlayerNames()[0] + "님이 승리했습니다!");
+                }
+            }
+            System.WinColor = OmokStoneEnum.StoneColor.Default;
+            IsPlayingGame = false;
+        }
+    }
+
     [SerializeField, Header("0은 내 이름, 1은 상대방 이름")] TextMeshProUGUI[] nickNameTexts;
     public void InitPlayerName()
     {
         List<string> playerNickNameGroup = OmokGameManager.Instance.Network.GetPlayerNames();
         int nickNameCnt = playerNickNameGroup.Count;
+        turnPanels[0].SetActive(false);
+        turnPanels[1].SetActive(false);
         nickNameTexts[0].text = playerNickNameGroup[0];
         nickNameTexts[1].text = (nickNameCnt < 2) ? "" : playerNickNameGroup[1];
     }
@@ -141,7 +209,10 @@ public class GameSystemUI : MonoBehaviour
         winText.gameObject.SetActive(true);
         Invoke("CloseWinText", 3f);
     }
-    public void CloseWinText() { winText.gameObject.SetActive(false); }
+    public void CloseWinText() 
+    {
+        winText.gameObject.SetActive(false);
+    }
 
     [SerializeField, Header("0은 나, 1은 상대방 : 돌의 색 이미지")] Image[] stoneColorImages;
     [SerializeField, Header("0은 흰돌, 1은 검은돌")] Sprite[] stoneSprites;

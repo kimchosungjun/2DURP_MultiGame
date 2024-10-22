@@ -119,9 +119,14 @@ public class MultiGameController : MonoBehaviour
         
         System.GridManager.PutStone(currentCoordinate, playerStoneColor);
         // 턴을 넘겨줌
-        System.ReverseTurnByPut();
         greenNRedStone[0].gameObject.SetActive(false);
         greenNRedStone[1].gameObject.SetActive(false);
         canPut = false;
+    }
+
+    public void TurnOffIndiacateStone()
+    {
+        greenNRedStone[0].gameObject.SetActive(false);
+        greenNRedStone[1].gameObject.SetActive(false);
     }
 }

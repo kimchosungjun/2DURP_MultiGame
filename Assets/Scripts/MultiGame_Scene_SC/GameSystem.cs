@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Photon.Pun;
 using Photon.Realtime;
-
+using OmokStoneEnum;
 public class GameSystem : MonoBehaviourPunCallbacks
 {
     /*********************** 컴포넌트 **********************************/
@@ -23,6 +23,20 @@ public class GameSystem : MonoBehaviourPunCallbacks
             return ui;
         }
     }
+    MultiGameController controller;
+    public MultiGameController Controller
+    {
+        get
+        {
+            // 찾아서 연결
+            if (controller == null)
+                controller = FindObjectOfType<MultiGameController>();
+            // 없으면 null
+            if (controller == null)
+                return null;
+            return controller;
+        }
+    }
 
     /*********************** 변수 ***************************************/
     bool isBlack = false; // 현재 검은돌의 턴인지
@@ -34,6 +48,9 @@ public class GameSystem : MonoBehaviourPunCallbacks
     public bool IsMasterBlack { get => isMasterBlack; set => pv.RPC(nameof(SetMasterBlack), RpcTarget.AllBuffered, value); }
     [PunRPC] void SetMasterBlack(bool _isMasterBlack) => isMasterBlack = _isMasterBlack;
 
+    StoneColor winColor = StoneColor.Default;
+    public StoneColor WinColor { get => winColor; set => pv.RPC(nameof(SetWinColor), RpcTarget.AllBuffered, value); }
+    [PunRPC] void SetWinColor(StoneColor _winColor) => winColor = _winColor;
     [SerializeField] OmokGridManager gridManager;
     public OmokGridManager GridManager { get { return gridManager; } }
     /*********************** 초기 설정 *********************************/
@@ -50,6 +67,17 @@ public class GameSystem : MonoBehaviourPunCallbacks
         IsBlack = true;
         IsMasterBlack = !isMasterBlack;
     }
+
+    public void BeforeRematch()
+    {
+        InitSettingValue();
+        BeforeGameStart();
+        RematchClear();
+        StartCoroutine(BeforeGameStartTimer(true));
+    }
+
+    public void RematchClear() { pv.RPC("RPC_RematchClear", RpcTarget.AllBuffered); }
+    [PunRPC] void RPC_RematchClear() { gridManager.RematchClear(); if (UI != null) { UI.StopTimer(); UI.GameWinClearUI(); } }
 
     #region Game 시작 전 : 나가기 & 대결 버튼 활성화 
     public void BeforeGameStart()
@@ -70,11 +98,14 @@ public class GameSystem : MonoBehaviourPunCallbacks
     // 생성시 & 재대결 시 호출 : 5초 후 게임 시작
     public void StartBeforeGameTimer() { StartCoroutine(BeforeGameStartTimer()); }
     public void StopAllTimer() { StopAllCoroutines(); }
-    IEnumerator BeforeGameStartTimer()
+    IEnumerator BeforeGameStartTimer(bool _isRematch=false)
     {
-        if (!PhotonNetwork.IsMasterClient)
-            yield break;
-
+        if (!_isRematch)
+        {
+            if (!PhotonNetwork.IsMasterClient)
+                yield break;
+        }
+       
         float timer = 0f;
         while (timer < 5f)
         {
@@ -99,6 +130,10 @@ public class GameSystem : MonoBehaviourPunCallbacks
             return;
         UI.IsPlayingGame = true;
         UI.DecideActiveState_BeforeUI(false);
+
+        if (Controller == null)
+            return;
+        Controller.StopGame = false;
     }
     // 타이머 UI 활성화
     [PunRPC] void RPC_StartTurnTimer()
@@ -148,6 +183,10 @@ public class GameSystem : MonoBehaviourPunCallbacks
         if (UI == null)
             return;
         UI.SetTurnUI(_isMasterTurn);
+
+        if (Controller == null)
+            return;
+        Controller.TurnOffIndiacateStone();
     }
     #endregion
 
@@ -155,6 +194,11 @@ public class GameSystem : MonoBehaviourPunCallbacks
     void OnDestroy()
     {
         StopAllCoroutines();
+    }
+
+    public void EndGame()
+    {
+        BeforeRematch();
     }
 
     #region UI 초기화
@@ -166,7 +210,7 @@ public class GameSystem : MonoBehaviourPunCallbacks
     {
         if (UI == null)
             return;
-        UI.ClearUIState();
+        //UI.ClearUIState();
     }
     #endregion
 }
