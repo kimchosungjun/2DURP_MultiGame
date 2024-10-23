@@ -20,6 +20,7 @@ public class TitleUI : MonoBehaviour
         {
             GameObject go = GameObject.Instantiate(gameManagerObj);
             go.name = "OmokGameManager";
+            Screen.SetResolution(1080, 1920, true);
         }
     }
     #endregion

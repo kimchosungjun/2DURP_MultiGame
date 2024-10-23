@@ -52,13 +52,17 @@ public class MultiGameController : MonoBehaviour
         if (!IsMyTurn)
             return;
 
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.touchCount > 0)
         {
-            Vector3 mousePos = Input.mousePosition;
-            mousePos = Camera.main.ScreenToWorldPoint(mousePos);
-            mousePos.z = 0;
-            int _touchPointX = Mathf.RoundToInt(mousePos.x);
-            int _touchPointY = Mathf.RoundToInt(mousePos.y);
+            // UI 터치를 방지
+            if (EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+                return;
+
+            Touch _firstTouch = Input.GetTouch(0);
+            Vector3 _touchPoint = Camera.main.ScreenToWorldPoint(_firstTouch.position);
+            _touchPoint.z = 0;
+            int _touchPointX = Mathf.RoundToInt(_touchPoint.x);
+            int _touchPointY = Mathf.RoundToInt(_touchPoint.y);
             Vector2Int _coordinate = new Vector2Int(_touchPointX, _touchPointY);
 
             // Grid 범위를 벗어나면 입력을 받지 않는다.
@@ -81,33 +85,6 @@ public class MultiGameController : MonoBehaviour
                 greenNRedStone[1].transform.position = new Vector3(currentCoordinate.x, currentCoordinate.y, 0);
                 greenNRedStone[0].SetActive(false);
             }
-        }
-
-        return;
-
-        if (Input.touchCount > 0)
-        {
-            // UI 터치를 방지
-            if (EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
-                return;
-
-            Touch _firstTouch = Input.GetTouch(0);
-            Vector3 _touchPoint = Camera.main.ScreenToWorldPoint(_firstTouch.position);
-            _touchPoint.z = 0;
-            int _touchPointX = Mathf.RoundToInt(_touchPoint.x);
-            int _touchPointY = Mathf.RoundToInt(_touchPoint.y);
-            Vector2Int _coordinate = new Vector2Int(_touchPointX, _touchPointY);
-
-            // Grid 범위를 벗어나면 입력을 받지 않는다.
-            if (System.GridManager.CheckOverRange(_coordinate))
-                return;
-
-            currentCoordinate = _coordinate;
-
-            if (System.GridManager.CanPutStone(_coordinate, playerStoneColor))
-                canPut = true;
-            else
-                canPut = false;
         }
     }
 

@@ -17,7 +17,7 @@ public class AccountManager : MonoBehaviour
 {
 	public TitleUI TitleController { get; set; } = null;
 	public LoginUIController LoginController { get; set; } = null;
-	const string URL = "https://script.google.com/macros/s/AKfycbzLMoESW5sQYFF-Qf5Fusfc0hZnxD2_MXme1X5yA_-222NovvtsR_7wjQMxjsz8S6Gs/exec";
+	const string URL = "https://script.google.com/macros/s/AKfycbwxHWTHQdAiduHI5Oqoaqx4am1yL2bb7V0YKg_aIZN-0VuV0SUqf8yLkgmSVWbzq0JL/exec";
 
 	[Header("서버 데이터"),SerializeField] PostData postData = null;
 	[Header("로그 데이터"), SerializeField] LoadLogData loadLogData;
@@ -32,6 +32,7 @@ public class AccountManager : MonoBehaviour
 	}
 	public LoadLogData LoadData { get { return loadLogData; } }
 
+	string createID = "";
 	string id = "";
 	public string ID { get { return id; } set { id = value; } }
 	string password = "";
@@ -55,6 +56,7 @@ public class AccountManager : MonoBehaviour
 			return;
         }
 
+		createID = _id;
 		WWWForm form = new WWWForm();
 		form.AddField("order", "OVERLAP");
 		form.AddField("id", _id);
@@ -87,7 +89,7 @@ public class AccountManager : MonoBehaviour
 		// 이미 조건체크가 끝난 상태 : 등록만 하면 된다.
 		WWWForm form = new WWWForm();
 		form.AddField("order", "REGISTER");
-		form.AddField("id", id);
+		form.AddField("id", createID);
 		form.AddField("password", password);
 		form.AddField("scoreValue", 1000);
 		StartCoroutine(Post(form, LoginController.Account.ShowCreateAccount));
@@ -143,6 +145,7 @@ public class AccountManager : MonoBehaviour
     {
         WWWForm form = new WWWForm();
         form.AddField("order", "LOGOUT");
+		form.AddField("id", id);
 		OmokGameManager.Instance.Loading.ShowLoading(true);
 		StartCoroutine(Post(form, DoLogOut));
     }
